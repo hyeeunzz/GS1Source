@@ -1,0 +1,3 @@
+# run this command on src/main/java/org/gs1/source/schema
+# PATH_TO_SCHEMA_DIR = C:\Users\Hyeeun\Desktop\eclipse\workspace\DataAggregator_1\src\main\java\org\gs1\source\schema
+xjc -p org.gs1.source.tsd -d ../../../.. PATH_TO_SCHEMA_DIR
