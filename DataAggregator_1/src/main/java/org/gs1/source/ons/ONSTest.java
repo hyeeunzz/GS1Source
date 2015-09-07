@@ -10,7 +10,7 @@ import org.xbill.DNS.Type;
 public class ONSTest {
 	public static void main(String[] args) {
 		
-		String domain = "5.3.5.1.5.6.0.0.0.1.0.8.8.gtin.gs1.id.onsepc.kr";
+		String domain = "0.2.5.1.5.6.0.0.0.1.0.8.8.gtin.gs1.id.onsepc.kr";
 		List<String> res = new ArrayList<String>();
 		Record[] result = null;
 		

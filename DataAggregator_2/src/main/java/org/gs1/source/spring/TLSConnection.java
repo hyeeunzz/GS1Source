@@ -11,9 +11,6 @@ public class TLSConnection {
 
 	public SSLContext clientConnection() throws Exception {
 
-		SecureRandom secureRandom = new SecureRandom();
-		secureRandom.nextInt();
-
 		KeyStore keyStore = KeyStore.getInstance("JKS");
 		keyStore.load(new FileInputStream("C://Users/Hyeeun/keystore.jks"), "changeit".toCharArray());
 
@@ -24,7 +21,7 @@ public class TLSConnection {
 		kmf.init(keyStore, "changeit".toCharArray());
 
 		SSLContext sslContext = SSLContext.getInstance("TLS");
-		sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), secureRandom);
+		sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
 
 		return sslContext;
 	}

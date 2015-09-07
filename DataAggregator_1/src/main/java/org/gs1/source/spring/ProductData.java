@@ -1,6 +1,8 @@
 package org.gs1.source.spring;
 
-import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -55,20 +57,18 @@ public class ProductData {
 		rs.setProductData(productdata);
 	}
 
-	public String marshal() throws JAXBException{
+	public String marshal() throws JAXBException, UnsupportedEncodingException{
 
 		JAXBElement<TSDQueryByGTINResponseType> r = of.createQueryByGtinResponse(rs);
 		JAXBContext jc = JAXBContext.newInstance("org.gs1.source.tsd");
 		Marshaller m = jc.createMarshaller();
-		ByteArrayOutputStream baos = null;
-
-		baos = new ByteArrayOutputStream();
 		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-		//m.marshal(r, System.out);
-		m.marshal(r, baos);
-		String str = baos.toString();
 
-		return str;
+		Writer writer = new StringWriter();
+		m.marshal(r, writer);
+		String s = writer.toString();
+
+		return s;
 	}
 
 }

@@ -10,7 +10,14 @@ public class AggregatorIndexQueryInterface {
 		
 		ONSQuery onsQuery = new ONSQuery();
 		
-		List<String> queryUrl = onsQuery.query(request.getGtin());
+		String gtin = request.getGtin();
+		if(gtin.length() < 14){
+			while(gtin.length() < 14){
+				gtin = "0" + gtin;
+			}
+		}
+		
+		List<String> queryUrl = onsQuery.query(gtin);
 		
 		for(String r : queryUrl){
 			if(r.toLowerCase().contains("http://www.ons.gs1.org/tsd/servicetype-aaqi")){

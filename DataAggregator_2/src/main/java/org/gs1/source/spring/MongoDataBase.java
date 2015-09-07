@@ -51,8 +51,12 @@ public class MongoDataBase {
 		JAXBElement<TSDQueryByGTINResponseType> r = (JAXBElement<TSDQueryByGTINResponseType>) jaxbUnmarshaller.unmarshal(reader);
 
 		TSDQueryByGTINResponseType rs = (TSDQueryByGTINResponseType) r.getValue();
+		
+		Query query = new Query();
+		query.addCriteria(where("productData.gtin").is(rs.getProductData().getGtin()));
+		query.addCriteria(where("productData.targetMarket").is(rs.getProductData().getTargetMarket()));
 
-		TSDQueryByGTINResponseType rs_1 = mongoOps.findOne(query(where("productData.gtin").is(rs.getProductData().getGtin())), TSDQueryByGTINResponseType.class, "productData");
+		TSDQueryByGTINResponseType rs_1 = mongoOps.findOne(query, TSDQueryByGTINResponseType.class, "productData");
 
 		if(rs_1 != null){
 			System.out.println("The product of GTIN " + rs.getProductData().getGtin() + " is aleady exist.");
@@ -77,7 +81,7 @@ public class MongoDataBase {
 		query.addCriteria(where("productData.targetMarket").is(targetMarket));
 
 		TSDQueryByGTINResponseType rs = mongoOps.findOne(query, TSDQueryByGTINResponseType.class, "productData");
-
+		
 		if(rs == null){
 			AggregatorIndexQueryInterface aiqi = new AggregatorIndexQueryInterface();
 			TSDQueryIndexByGTINRequestType request = new TSDQueryIndexByGTINRequestType();

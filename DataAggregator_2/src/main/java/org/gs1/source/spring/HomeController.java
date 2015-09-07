@@ -1,16 +1,23 @@
 package org.gs1.source.spring;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.gs1.source.tsd.CountryCodeType;
-import org.gs1.source.tsd.TSDQueryByGTINResponseType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -88,12 +95,19 @@ public class HomeController {
 
 	}
 	
+	@RequestMapping(value = "/register", method = RequestMethod.GET)
+	public String register(Locale locale, Model model) {
+
+		return "register";
+
+	}
+	
 	@RequestMapping(value = "/registered", method = RequestMethod.POST)
-	public String registered(@Validated TSDQueryByGTINResponseType rs, Model model) {
+	public String registered(HttpServletRequest request, Model model) throws UnsupportedEncodingException {
 		
-		model.addAttribute("productData", rs.getProductData());
+		request.setCharacterEncoding("UTF-8");
 		return "registered";
 		
 	}
-	
+
 }

@@ -51,8 +51,12 @@ public class MongoDataBase {
 		JAXBElement<TSDQueryByGTINResponseType> r = (JAXBElement<TSDQueryByGTINResponseType>) jaxbUnmarshaller.unmarshal(reader);
 
 		TSDQueryByGTINResponseType rs = (TSDQueryByGTINResponseType) r.getValue();
+		
+		Query query = new Query();
+		query.addCriteria(where("productData.gtin").is(rs.getProductData().getGtin()));
+		query.addCriteria(where("productData.targetMarket").is(rs.getProductData().getTargetMarket()));
 
-		TSDQueryByGTINResponseType rs_1 = mongoOps.findOne(query(where("productData.gtin").is(rs.getProductData().getGtin())), TSDQueryByGTINResponseType.class, "productData");
+		TSDQueryByGTINResponseType rs_1 = mongoOps.findOne(query, TSDQueryByGTINResponseType.class, "productData");
 
 		if(rs_1 != null){
 			System.out.println("The product of GTIN " + rs.getProductData().getGtin() + " is aleady exist.");
@@ -71,27 +75,27 @@ public class MongoDataBase {
 
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(MongoConfiguration.class);
 		MongoOperations mongoOps = (MongoOperations) ctx.getBean("mongoTemplate");
-		
+
 		Query query = new Query();
 		query.addCriteria(where("productData.gtin").is(gtin));
 		query.addCriteria(where("productData.targetMarket").is(targetMarket));
 
 		TSDQueryByGTINResponseType rs = mongoOps.findOne(query, TSDQueryByGTINResponseType.class, "productData");
-
+		
 		if(rs == null){
 			AggregatorIndexQueryInterface aiqi = new AggregatorIndexQueryInterface();
 			TSDQueryIndexByGTINRequestType request = new TSDQueryIndexByGTINRequestType();
 			request.setGtin(gtin);
 			request.setTargetMarket(targetMarket);
 			String aggregatorUrl = aiqi.queryByGtin(request);
-			
+
 			if(aggregatorUrl == null){
 				System.out.println("There is no product of GTIN " + gtin + ".");
 				return null;
 			}
-			
+
 			rs = queryData(gtin, targetMarket, "1.1", aggregatorUrl);
-			
+
 			if(rs == null){
 				System.out.println("There is no product of GTIN " + gtin + ".");
 				return null;
@@ -107,7 +111,7 @@ public class MongoDataBase {
 	}
 
 	public TSDQueryByGTINResponseType queryData(String gtin, CountryCodeType targetMarket, String dataVersion, String aggregatorUrl) throws Exception{
-		
+
 		AggregatorAggregatorQueryInterface aaqi = new AggregatorAggregatorQueryInterface();
 		TSDQueryByGTINRequestType request = new TSDQueryByGTINRequestType();
 		request.setGtin(gtin);		
@@ -115,59 +119,59 @@ public class MongoDataBase {
 		request.setDataVersion(dataVersion);
 
 		TSDQueryByGTINResponseType rs = aaqi.queryByGtin(request, aggregatorUrl);
-		
+
 		return rs;
-		
+
 	}
-	
+
 	@SuppressWarnings("resource")
 	public void insertKeyClient(String serviceUrl, String key){
-		
+
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(MongoConfiguration.class);
 		MongoOperations mongoOps = (MongoOperations) ctx.getBean("mongoTemplate");
-		
+
 		ClientKeyType map = new ClientKeyType();
 		map.setServiceUrl(serviceUrl);
 		map.setKey(key);
-		
+
 		mongoOps.insert(map, "clientKeys");
-		
+
 	}
-	
+
 	@SuppressWarnings({ "resource" })
 	public String findKeyClient(String serviceUrl){
-		
+
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(MongoConfiguration.class);
 		MongoOperations mongoOps = (MongoOperations) ctx.getBean("mongoTemplate");
-		
+
 		ClientKeyType map = mongoOps.findOne(query(where("serviceUrl").is(serviceUrl)), ClientKeyType.class, "clientKeys");
-		
-		return map.getKey();
-	}
-	
-	@SuppressWarnings("resource")
-	public void insertKeyServer(String clientGln, String key){
-		
-		ApplicationContext ctx = new AnnotationConfigApplicationContext(MongoConfiguration.class);
-		MongoOperations mongoOps = (MongoOperations) ctx.getBean("mongoTemplate");
-		
-		ServerKeyType map = new ServerKeyType();
-		map.setClientGln(clientGln);
-		map.setKey(key);
-		
-		mongoOps.insert(map, "serverKeys");
-		
-	}
-	
-	@SuppressWarnings({ "resource" })
-	public String findKeyServer(String clientGln){
-		
-		ApplicationContext ctx = new AnnotationConfigApplicationContext(MongoConfiguration.class);
-		MongoOperations mongoOps = (MongoOperations) ctx.getBean("mongoTemplate");
-		
-		ServerKeyType map = mongoOps.findOne(query(where("clientGln").is(clientGln)), ServerKeyType.class, "serverKeys");
-		
+
 		return map.getKey();
 	}
 
+	@SuppressWarnings("resource")
+	public void insertKeyServer(String clientGln, String key){
+
+		ApplicationContext ctx = new AnnotationConfigApplicationContext(MongoConfiguration.class);
+		MongoOperations mongoOps = (MongoOperations) ctx.getBean("mongoTemplate");
+
+		ServerKeyType map = new ServerKeyType();
+		map.setClientGln(clientGln);
+		map.setKey(key);
+
+		mongoOps.insert(map, "serverKeys");
+
+	}
+
+	@SuppressWarnings({ "resource" })
+	public String findKeyServer(String clientGln){
+
+		ApplicationContext ctx = new AnnotationConfigApplicationContext(MongoConfiguration.class);
+		MongoOperations mongoOps = (MongoOperations) ctx.getBean("mongoTemplate");
+
+		ServerKeyType map = mongoOps.findOne(query(where("clientGln").is(clientGln)), ServerKeyType.class, "serverKeys");
+
+		return map.getKey();
+	}
+	
 }
