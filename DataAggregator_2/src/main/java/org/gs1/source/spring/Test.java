@@ -27,8 +27,8 @@ public class Test {
 		aimi.add(request);
 		
 		String zone_name = (new ZONEConvert()).convert(request.getGtin());
-		String rdata_1 = "0 0 \"U\" \"http://www.ons.gs1.org/tsd/servicetype-aaqi\" \"!^.*$!"
-				+ request.getAggregatorUrl() + "!\" .";
+		String rdata_1 = "0 0 \\\"U\\\" \\\"http://www.ons.gs1.org/tsd/servicetype-aaqi\\\" \\\"!^.*$!"
+				+ request.getAggregatorUrl() + "!\\\" .";
 		String rdata_2 = "52.69.212.96";
 		String parameters = "\"" + zone_name + "\", [ { \"" + "ttl" + "\" : \"" + "0" + "\", \"" + "label" + "\" : \"" + "@" + "\", \""
 				+ "class" + "\" : \"" + "IN" + "\", \"" + "type" + "\" : \"" + "NAPTR" + "\", \"" + "rdata"	+ "\" : \"" + rdata_1
