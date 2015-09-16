@@ -1,12 +1,6 @@
 package org.gs1.source.spring;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -68,14 +62,14 @@ public class HomeController {
 			return model;
 		}
 
-		if(clientGln != mac){
+		if(clientGln.compareTo("0") != 0){
 			String key = mongo.findKeyServer(clientGln);
 			String mac_url = "v1/ProductData/gtin/" + gtin + "?targetMarket=" + targetMarketString
 					+ "&dataVersion=" + dataVersion + "&clientGln=" + clientGln;
 			MacEncode macEncode = new MacEncode();
 			String mac_check = macEncode.encode(key, mac_url);
 
-			if(mac != mac_check){
+			if(mac.compareTo(mac_check) != 0){
 				model.addObject("ResponseString", "Exception: mac is not identical.");
 				model.addObject("payloadMac", "0");
 				return model;

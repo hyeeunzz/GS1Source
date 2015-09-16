@@ -1,4 +1,4 @@
-package org.gs1.source.ons;
+package org.gs1.source.spring;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +20,12 @@ public class ONSQuery {
 		List<String> res = new ArrayList<String>();
 		Record[] result = null;
 		
+		System.out.println(aus);
+		System.out.println(domain);
+		
 		try {
 			Lookup lookup = new Lookup(domain, Type.NAPTR);
-			lookup.setResolver(new SimpleResolver("143.248.1.177"));
+			lookup.setResolver(new SimpleResolver("8.8.8.8"));
 			lookup.setCache(null);
 			result = lookup.run();
 			int code = lookup.getResult();
@@ -31,6 +34,8 @@ public class ONSQuery {
 					res.add(r.rdataToString());
 				}
 			}
+			
+			System.out.println(res);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

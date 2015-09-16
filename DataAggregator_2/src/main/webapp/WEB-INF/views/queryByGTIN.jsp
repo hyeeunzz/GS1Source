@@ -2,7 +2,7 @@
     pageEncoding="UTF-8"%>${ResponseString}
 
 <%
-	String mac = "${payloadMac}";
-	if(mac != "0")
+	String mac = (String) request.getAttribute("payloadMac");
+	if(mac.compareTo("0") != 0)
 		response.setHeader("GS1-MAC", mac);
 %>

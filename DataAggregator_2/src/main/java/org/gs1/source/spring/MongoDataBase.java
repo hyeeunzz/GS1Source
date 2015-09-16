@@ -66,6 +66,14 @@ public class MongoDataBase {
 		mongoOps.insert(rs, "productData");
 
 		System.out.println("The product of GTIN " + rs.getProductData().getGtin() + " is inserted to DB.");
+		
+		AggregatorIndexMaintenanceInterface aimi = new AggregatorIndexMaintenanceInterface();
+		
+		TSDIndexMaintenanceRequestType request = new TSDIndexMaintenanceRequestType();
+		request.setGtin(rs.getProductData().getGtin());
+		request.setAggregatorUrl("https://143.248.53.238:8443/DataAggregator_2/");
+		
+		aimi.add(request);
 
 		return rs.getProductData().getGtin();
 	}

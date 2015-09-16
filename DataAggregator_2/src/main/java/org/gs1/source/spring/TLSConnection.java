@@ -12,14 +12,14 @@ public class TLSConnection {
 	public SSLContext clientConnection() throws Exception {
 
 		KeyStore keyStore = KeyStore.getInstance("JKS");
-		keyStore.load(new FileInputStream("C://Users/Hyeeun/keystore.jks"), "changeit".toCharArray());
-
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-		tmf.init(keyStore);
+		keyStore.load(new FileInputStream("C://Users/Hyeeun/.keystore"), "changeit".toCharArray());
 
 		KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 		kmf.init(keyStore, "changeit".toCharArray());
-
+		
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+		tmf.init(keyStore);
+		
 		SSLContext sslContext = SSLContext.getInstance("TLS");
 		sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
 

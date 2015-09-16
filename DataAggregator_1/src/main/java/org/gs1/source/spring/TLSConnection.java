@@ -15,7 +15,7 @@ public class TLSConnection {
 		secureRandom.nextInt();
 
 		KeyStore keyStore = KeyStore.getInstance("JKS");
-		keyStore.load(new FileInputStream("C://Users/Hyeeun/keystore.jks"), "changeit".toCharArray());
+		keyStore.load(new FileInputStream("/var/lib/tomcat7/.keystore"), "changeit".toCharArray());
 
 		TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
 		tmf.init(keyStore);

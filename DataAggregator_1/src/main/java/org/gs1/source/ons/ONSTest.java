@@ -16,7 +16,7 @@ public class ONSTest {
 		
 		try {
 			Lookup lookup = new Lookup(domain, Type.NAPTR);
-			lookup.setResolver(new SimpleResolver("143.248.1.177"));
+			lookup.setResolver(new SimpleResolver("52.69.212.96"));
 			lookup.setCache(null);
 			result = lookup.run();
 			int code = lookup.getResult();

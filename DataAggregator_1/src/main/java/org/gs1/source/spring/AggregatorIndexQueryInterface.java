@@ -2,8 +2,6 @@ package org.gs1.source.spring;
 
 import java.util.List;
 
-import org.gs1.source.ons.ONSQuery;
-
 public class AggregatorIndexQueryInterface {
 
 	public String queryByGtin(TSDQueryIndexByGTINRequestType request){

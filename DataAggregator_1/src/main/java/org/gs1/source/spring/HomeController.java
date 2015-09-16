@@ -62,21 +62,21 @@ public class HomeController {
 			return model;
 		}
 
-		if(clientGln != mac){
+		if(clientGln.compareTo("0") != 0){
 			String key = mongo.findKeyServer(clientGln);
 			String mac_url = "v1/ProductData/gtin/" + gtin + "?targetMarket=" + targetMarketString
 					+ "&dataVersion=" + dataVersion + "&clientGln=" + clientGln;
 			MacEncode macEncode = new MacEncode();
 			String mac_check = macEncode.encode(key, mac_url);
 
-			if(mac != mac_check){
+			if(mac.compareTo(mac_check) != 0){
 				model.addObject("ResponseString", "Exception: mac is not identical.");
 				model.addObject("payloadMac", "0");
 				return model;
 			}
 
 			String mac_payload = macEncode.encode(key, str);
-
+			
 			model.addObject("ResponseString", str);
 			model.addObject("payloadMac", mac_payload);
 		}

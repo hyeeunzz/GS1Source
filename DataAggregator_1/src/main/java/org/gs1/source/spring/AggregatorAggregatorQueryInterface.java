@@ -7,8 +7,10 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
@@ -40,8 +42,16 @@ public class AggregatorAggregatorQueryInterface {
 		URL obj = new URL(url);
 		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
 		
+		con.setHostnameVerifier(new HostnameVerifier(){
+			public boolean verify(String arg0, SSLSession arg1) {
+				
+				return true;
+			}
+		});
+		
 		con.setSSLSocketFactory(sslContext.getSocketFactory());
 		con.setRequestMethod("GET");
+		con.connect();
 
 		if(con.getResponseCode() != 200){
 			System.out.println("Failed : HTTP error code : " + con.getResponseCode());
@@ -56,7 +66,7 @@ public class AggregatorAggregatorQueryInterface {
 			System.out.println(entry.getKey() + ": " + entry.getValue());
 		}
 
-		BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
 		String output;
 		StringBuffer response = new StringBuffer();
 
@@ -65,17 +75,22 @@ public class AggregatorAggregatorQueryInterface {
 		while ((output = br.readLine()) != null) {
 			System.out.println(output);
 			response.append(output);
+			if(output.compareTo("") != 0)
+				response.append("\n");
 		}
 		br.close();
 
 		con.disconnect();
+		
+		if(response.toString().contains("Exception"))
+			return null;
 
 		String mac_payload = macEncode.encode(key, response.toString());
-		if(mac_payload != con.getHeaderField("MAC")){
+		
+		if(mac_payload.compareTo(con.getHeaderField("GS1-MAC")) != 0){
 			System.out.println("Exception: payload is not identical.");
 			return null;
 		}
-		
 		
 		JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
 		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
