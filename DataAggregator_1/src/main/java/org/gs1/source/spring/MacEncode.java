@@ -7,6 +7,7 @@ import org.apache.commons.codec.binary.Hex;
 
 public class MacEncode {
 
+	//MacEncode with SHA256-HMAC
 	public String encode(String key, String data) throws Exception{
 
 		Mac sha256_HMAC = Mac.getInstance("HmacSHA256");

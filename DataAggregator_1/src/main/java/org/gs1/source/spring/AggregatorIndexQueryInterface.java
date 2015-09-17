@@ -4,6 +4,7 @@ import java.util.List;
 
 public class AggregatorIndexQueryInterface {
 
+	//AIQI query
 	public String queryByGtin(TSDQueryIndexByGTINRequestType request){
 		
 		ONSQuery onsQuery = new ONSQuery();

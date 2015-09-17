@@ -31,6 +31,7 @@ public class MongoDataBase {
 
 	public MongoDataBase(){}
 
+	//Clear data in collection productData
 	@SuppressWarnings("resource")
 	public void clearData() throws UnknownHostException{
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(MongoConfiguration.class);
@@ -38,12 +39,14 @@ public class MongoDataBase {
 		mongoOps.dropCollection("productData");
 	}
 
+	//Insert data in collection productData
 	@SuppressWarnings({ "resource", "unchecked" })
 	public String insertData(String xmldata) throws JAXBException, SAXException, IOException{
 
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(MongoConfiguration.class);
 		MongoOperations mongoOps = (MongoOperations) ctx.getBean("mongoTemplate");
 
+		//Unmarshall productData of xml form
 		JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
 		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 
@@ -52,6 +55,7 @@ public class MongoDataBase {
 
 		TSDQueryByGTINResponseType rs = (TSDQueryByGTINResponseType) r.getValue();
 		
+		//Check there exists the same data
 		Query query = new Query();
 		query.addCriteria(where("productData.gtin").is(rs.getProductData().getGtin()));
 		query.addCriteria(where("productData.targetMarket").is(rs.getProductData().getTargetMarket()));
@@ -63,10 +67,12 @@ public class MongoDataBase {
 			return null;
 		}
 
+		//Insert data
 		mongoOps.insert(rs, "productData");
 
 		System.out.println("The product of GTIN " + rs.getProductData().getGtin() + " is inserted to DB.");
 		
+		//Call AIMI add method
 		AggregatorIndexMaintenanceInterface aimi = new AggregatorIndexMaintenanceInterface();
 		
 		TSDIndexMaintenanceRequestType request = new TSDIndexMaintenanceRequestType();
@@ -78,38 +84,42 @@ public class MongoDataBase {
 		return rs.getProductData().getGtin();
 	}
 
+	//Find data in collection productData
 	@SuppressWarnings("resource")
 	public String findData(String gtin, CountryCodeType targetMarket) throws Exception{
 
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(MongoConfiguration.class);
 		MongoOperations mongoOps = (MongoOperations) ctx.getBean("mongoTemplate");
 
+		//Find data
 		Query query = new Query();
 		query.addCriteria(where("productData.gtin").is(gtin));
 		query.addCriteria(where("productData.targetMarket").is(targetMarket));
 
 		TSDQueryByGTINResponseType rs = mongoOps.findOne(query, TSDQueryByGTINResponseType.class, "productData");
 		
+		//No data in this Data Aggregator
 		if(rs == null){
-			AggregatorIndexQueryInterface aiqi = new AggregatorIndexQueryInterface();
-			TSDQueryIndexByGTINRequestType request = new TSDQueryIndexByGTINRequestType();
-			request.setGtin(gtin);
-			request.setTargetMarket(targetMarket);
-			String aggregatorUrl = aiqi.queryByGtin(request);
+			//Find URL of peer Aggregator which has data
+			String aggregatorUrl = queryUrl(gtin, targetMarket);
 
+			//No peer Aggregator which has data
 			if(aggregatorUrl == null){
 				System.out.println("There is no product of GTIN " + gtin + ".");
 				return null;
 			}
 
+			//Query data to peer Aggregator
 			rs = queryData(gtin, targetMarket, "1.1", aggregatorUrl);
 
+			//No data in peer Aggregator
 			if(rs == null){
 				System.out.println("There is no product of GTIN " + gtin + ".");
 				return null;
 			}
 		}
 
+		//Marshalling data to xml form string
 		ProductData productdata = new ProductData();
 		productdata.make(rs.getProductData());
 		String str = productdata.marshal();
@@ -117,7 +127,21 @@ public class MongoDataBase {
 		return str;
 
 	}
+	
+	//Call AIQI
+	public String queryUrl(String gtin, CountryCodeType targetMarket) {
+		
+		AggregatorIndexQueryInterface aiqi = new AggregatorIndexQueryInterface();
+		TSDQueryIndexByGTINRequestType request = new TSDQueryIndexByGTINRequestType();
+		request.setGtin(gtin);
+		request.setTargetMarket(targetMarket);
+		String aggregatorUrl = aiqi.queryByGtin(request);
+		
+		return aggregatorUrl;
+		
+	}
 
+	//Call AAQI
 	public TSDQueryByGTINResponseType queryData(String gtin, CountryCodeType targetMarket, String dataVersion, String aggregatorUrl) throws Exception{
 
 		AggregatorAggregatorQueryInterface aaqi = new AggregatorAggregatorQueryInterface();
@@ -132,6 +156,7 @@ public class MongoDataBase {
 
 	}
 
+	//Insert client key
 	@SuppressWarnings("resource")
 	public void insertKeyClient(String serviceUrl, String key){
 
@@ -146,6 +171,7 @@ public class MongoDataBase {
 
 	}
 
+	//Find client key
 	@SuppressWarnings({ "resource" })
 	public String findKeyClient(String serviceUrl){
 
@@ -157,6 +183,7 @@ public class MongoDataBase {
 		return map.getKey();
 	}
 
+	//Insert server key
 	@SuppressWarnings("resource")
 	public void insertKeyServer(String clientGln, String key){
 
@@ -171,6 +198,7 @@ public class MongoDataBase {
 
 	}
 
+	//Find server key
 	@SuppressWarnings({ "resource" })
 	public String findKeyServer(String clientGln){
 

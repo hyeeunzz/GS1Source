@@ -9,22 +9,20 @@ import javax.net.ssl.TrustManagerFactory;
 
 public class TLSConnection {
 
+	//Connect client to server using TLS method
 	public SSLContext clientConnection() throws Exception {
-
-		SecureRandom secureRandom = new SecureRandom();
-		secureRandom.nextInt();
 
 		KeyStore keyStore = KeyStore.getInstance("JKS");
 		keyStore.load(new FileInputStream("/var/lib/tomcat7/.keystore"), "changeit".toCharArray());
 
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-		tmf.init(keyStore);
-
 		KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 		kmf.init(keyStore, "changeit".toCharArray());
 
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+		tmf.init(keyStore);
+		
 		SSLContext sslContext = SSLContext.getInstance("TLS");
-		sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), secureRandom);
+		sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
 
 		return sslContext;
 	}

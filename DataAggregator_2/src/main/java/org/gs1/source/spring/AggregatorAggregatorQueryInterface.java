@@ -20,29 +20,36 @@ import org.gs1.source.tsd.TSDQueryByGTINResponseType;
 
 public class AggregatorAggregatorQueryInterface {
 
+	//AAQI query
 	@SuppressWarnings("unchecked")
 	public TSDQueryByGTINResponseType queryByGtin(TSDQueryByGTINRequestType request, String aggregatorUrl) throws Exception{
 
+		//Get client key
 		MongoDataBase mongo = new MongoDataBase();
 		String key = mongo.findKeyClient(aggregatorUrl);
 
+		//clientGln of this Data Aggregator
 		String clientGln = "3504220000305";
 
+		//URL which is a parameter of MacEncode
 		String mac_url = "v1/ProductData/gtin/" + request.getGtin() + "?targetMarket=" + request.getTargetMarket().getValue()
 				+ "&dataVersion=" + request.getDataVersion() + "&clientGln=" + clientGln;
 
+		//Generate MAC
 		MacEncode macEncode = new MacEncode();
 		String mac = macEncode.encode(key, mac_url);
 
 		String url = aggregatorUrl + mac_url + "&mac=" + mac;
 
+		//Set TLS connection
 		TLSConnection tls = new TLSConnection();
 		SSLContext sslContext = tls.clientConnection();
 
+		//Https connection
 		URL obj = new URL(url);
 		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
 
-		con.setHostnameVerifier(new HostnameVerifier(){
+		con.setHostnameVerifier(new HostnameVerifier() {
 			public boolean verify(String arg0, SSLSession arg1) {
 
 				return true;
@@ -53,16 +60,17 @@ public class AggregatorAggregatorQueryInterface {
 		con.setRequestMethod("GET");
 		con.connect();
 		
-		if(con.getResponseCode() != 200){
+		if(con.getResponseCode() != 200) {
 			System.out.println("Failed : HTTP error code : " + con.getResponseCode());
 			return null;
 		}
 
+		//Print headers and body to console
 		Map<String, List<String>> map = con.getHeaderFields();
 
 		System.out.println("\nResponse Headers:\n");
 
-		for(Map.Entry<String, List<String>> entry : map.entrySet()){
+		for(Map.Entry<String, List<String>> entry : map.entrySet()) {
 			System.out.println(entry.getKey() + ": " + entry.getValue());
 		}
 
@@ -82,16 +90,21 @@ public class AggregatorAggregatorQueryInterface {
 
 		con.disconnect();
 		
-		if(response.toString().contains("Exception"))
+		//Response does not contain data
+		if(response.toString().contains("Exception")) {
 			return null;
+		}
 		
+		//Generate MAC of payload
 		String mac_payload = macEncode.encode(key, response.toString());
 		
-		if(mac_payload.compareTo(con.getHeaderField("GS1-MAC")) != 0){
+		//Check whether payload is reliable
+		if(mac_payload.compareTo(con.getHeaderField("GS1-MAC")) != 0) {
 			System.out.println("Exception: payload is not identical.");
 			return null;
 		}
 
+		//Unmarshall product data of xml form
 		JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
 		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 

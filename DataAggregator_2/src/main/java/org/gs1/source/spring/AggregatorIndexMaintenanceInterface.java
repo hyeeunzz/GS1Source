@@ -11,6 +11,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 public class AggregatorIndexMaintenanceInterface {
 
+	//Add zone in ONS
 	public TSDIndexMaintenanceResponseType add(TSDIndexMaintenanceRequestType request) throws IOException{
 
 		String url = "http://54.64.163.75/atomiadns.json/AddZone";
@@ -52,6 +53,7 @@ public class AggregatorIndexMaintenanceInterface {
 
 	}
 
+	//Delete zone in ONS
 	public TSDIndexMaintenanceResponseType delete(TSDIndexMaintenanceRequestType request) throws IOException{
 
 		String url = "http://54.64.163.75/atomiadns.json/DeleteZone";
@@ -77,6 +79,7 @@ public class AggregatorIndexMaintenanceInterface {
 
 	}
 
+	//Login and get token
 	public String login() throws IOException {
 		
 		String url = "http://54.64.163.75/atomiadns.json/Noop";
@@ -101,6 +104,7 @@ public class AggregatorIndexMaintenanceInterface {
 
 	}
 	
+	//Add records to the zone
 	public void addRecord(TSDIndexMaintenanceRequestType request, String token) throws ClientProtocolException, IOException {
 		
 		String url = "http://54.64.163.75/atomiadns.json/AddDnsRecords";
@@ -111,9 +115,10 @@ public class AggregatorIndexMaintenanceInterface {
 
 		String admin_username = "ch200356@resl.kaist.ac.kr";
 		String zone_name = (new ZONEConvert()).convert(request.getGtin());
-		//rdata_1 should be edited.
+		//NAPTR record
 		String rdata_1 = "0 0 \\\"U\\\" \\\"http://www.ons.gs1.org/tsd/servicetype-aaqi\\\" \\\"!^.*$!"
 				+ request.getAggregatorUrl() + "!\\\" .";
+		//Server IP address
 		String rdata_2 = "52.69.212.96";
 		String parameters = "\"" + zone_name + "\", [ { \"" + "ttl" + "\" : \"" + "0" + "\", \"" + "label" + "\" : \"" + "@" + "\", \""
 				+ "class" + "\" : \"" + "IN" + "\", \"" + "type" + "\" : \"" + "NAPTR" + "\", \"" + "rdata"	+ "\" : \"" + rdata_1

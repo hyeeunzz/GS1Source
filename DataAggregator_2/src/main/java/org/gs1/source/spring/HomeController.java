@@ -23,6 +23,7 @@ public class HomeController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 	
+	//Data Aggregator home page
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String home(Locale locale, Model model) {
 		logger.info("Welcome FSS Data Aggregator no.2! The client locale is {}.", locale);
@@ -37,6 +38,7 @@ public class HomeController {
 		return "home";
 	}
 	
+	//Product Data query page
 	@RequestMapping(value = "/v1/ProductData/gtin/{gtin:.+}", method = RequestMethod.GET)
 	public ModelAndView queryByGTIN(@PathVariable("gtin") String gtin,
 			@RequestParam(value = "targetMarket") String targetMarketString,
@@ -55,6 +57,7 @@ public class HomeController {
 
 		String str = mongo.findData(gtin, targetMarket);
 
+		//There is no product data of such gtin & target market
 		if(str == null){
 			model.addObject("ResponseString", "There is no product of GTIN " + gtin + ".");
 			model.addObject("payloadMac", "0");
@@ -62,6 +65,7 @@ public class HomeController {
 			return model;
 		}
 
+		//AAQI interface
 		if(clientGln.compareTo("0") != 0){
 			String key = mongo.findKeyServer(clientGln);
 			String mac_url = "v1/ProductData/gtin/" + gtin + "?targetMarket=" + targetMarketString
@@ -80,6 +84,7 @@ public class HomeController {
 			model.addObject("ResponseString", str);
 			model.addObject("payloadMac", mac_payload);
 		}
+		//Not AAQI interface, just present product data in web
 		else{
 			model.addObject("ResponseString", str);
 			model.addObject("payloadMac", "0");
@@ -89,6 +94,7 @@ public class HomeController {
 
 	}
 	
+	//Product data register page
 	@RequestMapping(value = "/register", method = RequestMethod.GET)
 	public String register(Locale locale, Model model) {
 
@@ -96,6 +102,7 @@ public class HomeController {
 
 	}
 	
+	//Product data registered page
 	@RequestMapping(value = "/registered", method = RequestMethod.POST)
 	public String registered(HttpServletRequest request, Model model) throws UnsupportedEncodingException {
 		

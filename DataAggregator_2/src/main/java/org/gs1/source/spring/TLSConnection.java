@@ -9,6 +9,7 @@ import javax.net.ssl.TrustManagerFactory;
 
 public class TLSConnection {
 
+	//Connect client to server using TLS method
 	public SSLContext clientConnection() throws Exception {
 
 		KeyStore keyStore = KeyStore.getInstance("JKS");

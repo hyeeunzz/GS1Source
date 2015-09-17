@@ -31,4 +31,5 @@ public class TSDIndexMaintenanceRequestType {
 	public void setAggregatorUrl(String value){
 		this.aggregatorUrl = value;
 	}
+	
 }

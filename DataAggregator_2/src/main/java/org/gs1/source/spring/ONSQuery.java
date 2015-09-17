@@ -10,6 +10,7 @@ import org.xbill.DNS.Type;
 
 public class ONSQuery {
 	
+	//Query to ONS
 	public List<String> query(String gtin){
 		
 		String domain = (new ZONEConvert()).convert(gtin);
@@ -18,6 +19,7 @@ public class ONSQuery {
 		
 		try {
 			Lookup lookup = new Lookup(domain, Type.NAPTR);
+			//KAIST IP address
 			lookup.setResolver(new SimpleResolver("143.248.1.177"));
 			lookup.setCache(null);
 			result = lookup.run();

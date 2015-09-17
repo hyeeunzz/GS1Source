@@ -10,7 +10,7 @@ public class MongoConfiguration {
 	
 	public @Bean MongoTemplate mongoTemplate() throws Exception{
 		
-		MongoTemplate mongoTemplate = new MongoTemplate(new MongoClient("localhost", 27017), "GS1Source1");
+		MongoTemplate mongoTemplate = new MongoTemplate(new MongoClient("54.64.55.43", 27017), "GS1Source1");
 		return mongoTemplate;
 		
 	}

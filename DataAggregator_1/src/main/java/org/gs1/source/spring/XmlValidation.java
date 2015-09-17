@@ -15,6 +15,7 @@ import org.xml.sax.SAXException;
 
 public class XmlValidation {
 
+	//Validate xml data
 	public boolean xmlValidation(String xmldata){
 		try{
 			
@@ -39,7 +40,6 @@ public class XmlValidation {
 
 			Schema schema = schemaFactory.newSchema(xsds);		
 			Validator validator = schema.newValidator();
-
 
 			validator.validate(new StreamSource(reader));
 			return true;
