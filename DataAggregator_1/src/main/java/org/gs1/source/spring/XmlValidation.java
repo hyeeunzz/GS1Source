@@ -15,7 +15,11 @@ import org.xml.sax.SAXException;
 
 public class XmlValidation {
 
-	//Validate xml data
+	/**
+	 * Validate xml data
+	 * @param xmldata
+	 * @return
+	 */
 	public boolean xmlValidation(String xmldata){
 		try{
 			

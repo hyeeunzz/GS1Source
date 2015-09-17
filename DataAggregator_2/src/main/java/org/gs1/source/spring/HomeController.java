@@ -23,7 +23,12 @@ public class HomeController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 	
-	//Data Aggregator home page
+	/**
+	 * Data Aggregator home page
+	 * @param locale
+	 * @param model
+	 * @return
+	 */
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String home(Locale locale, Model model) {
 		logger.info("Welcome FSS Data Aggregator no.2! The client locale is {}.", locale);
@@ -38,7 +43,16 @@ public class HomeController {
 		return "home";
 	}
 	
-	//Product Data query page
+	/**
+	 * Product Data query page
+	 * @param gtin
+	 * @param targetMarketString
+	 * @param dataVersion
+	 * @param clientGln
+	 * @param mac
+	 * @return
+	 * @throws Exception
+	 */
 	@RequestMapping(value = "/v1/ProductData/gtin/{gtin:.+}", method = RequestMethod.GET)
 	public ModelAndView queryByGTIN(@PathVariable("gtin") String gtin,
 			@RequestParam(value = "targetMarket") String targetMarketString,
@@ -94,7 +108,12 @@ public class HomeController {
 
 	}
 	
-	//Product data register page
+	/**
+	 * Product data register page
+	 * @param locale
+	 * @param model
+	 * @return
+	 */
 	@RequestMapping(value = "/register", method = RequestMethod.GET)
 	public String register(Locale locale, Model model) {
 
@@ -102,7 +121,13 @@ public class HomeController {
 
 	}
 	
-	//Product data registered page
+	/**
+	 * Product data registered page
+	 * @param request
+	 * @param model
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 */
 	@RequestMapping(value = "/registered", method = RequestMethod.POST)
 	public String registered(HttpServletRequest request, Model model) throws UnsupportedEncodingException {
 		

@@ -2,7 +2,11 @@ package org.gs1.source.spring;
 
 public class ZONEConvert {
 
-	//Convert gtin to domain(aus)
+	/**
+	 * Convert gtin to domain(aus)
+	 * @param gtin
+	 * @return
+	 */
 	public String convert(String gtin) {
 		
 		String aus = gtin.substring(0, 1) + "." + gtin.substring(12, 13) + "." + gtin.substring(11, 12) + "." + gtin.substring(10, 11) + "."

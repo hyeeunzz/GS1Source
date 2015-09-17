@@ -20,7 +20,13 @@ import org.gs1.source.tsd.TSDQueryByGTINResponseType;
 
 public class AggregatorAggregatorQueryInterface {
 
-	//AAQI query
+	/**
+	 * AAQI query
+	 * @param request
+	 * @param aggregatorUrl
+	 * @return
+	 * @throws Exception
+	 */
 	@SuppressWarnings("unchecked")
 	public TSDQueryByGTINResponseType queryByGtin(TSDQueryByGTINRequestType request, String aggregatorUrl) throws Exception{
 

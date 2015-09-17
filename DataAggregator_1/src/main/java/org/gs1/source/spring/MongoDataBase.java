@@ -29,9 +29,10 @@ public class MongoDataBase {
 	@SuppressWarnings("unused")
 	private static final Log log = LogFactory.getLog(MongoDataBase.class);
 
-	public MongoDataBase(){}
-
-	//Clear data in collection productData
+	/**
+	 * Clear data in collection productData
+	 * @throws UnknownHostException
+	 */
 	@SuppressWarnings("resource")
 	public void clearData() throws UnknownHostException{
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(MongoConfiguration.class);
@@ -39,7 +40,14 @@ public class MongoDataBase {
 		mongoOps.dropCollection("productData");
 	}
 
-	//Insert data in collection productData
+	/**
+	 * Insert data in collection productData 
+	 * @param xmldata
+	 * @return
+	 * @throws JAXBException
+	 * @throws SAXException
+	 * @throws IOException
+	 */
 	@SuppressWarnings({ "resource", "unchecked" })
 	public String insertData(String xmldata) throws JAXBException, SAXException, IOException{
 
@@ -84,7 +92,13 @@ public class MongoDataBase {
 		return rs.getProductData().getGtin();
 	}
 
-	//Find data in collection productData
+	/**
+	 * Find data in collection productData 
+	 * @param gtin
+	 * @param targetMarket
+	 * @return
+	 * @throws Exception
+	 */
 	@SuppressWarnings("resource")
 	public String findData(String gtin, CountryCodeType targetMarket) throws Exception{
 
@@ -128,7 +142,12 @@ public class MongoDataBase {
 
 	}
 
-	//Call AIQI
+	/**
+	 * Call AIQI
+	 * @param gtin
+	 * @param targetMarket
+	 * @return
+	 */
 	public String queryUrl(String gtin, CountryCodeType targetMarket) {
 
 		AggregatorIndexQueryInterface aiqi = new AggregatorIndexQueryInterface();
@@ -141,7 +160,15 @@ public class MongoDataBase {
 
 	}
 
-	//Call AAQI
+	/**
+	 * Call AAQI
+	 * @param gtin
+	 * @param targetMarket
+	 * @param dataVersion
+	 * @param aggregatorUrl
+	 * @return
+	 * @throws Exception
+	 */
 	public TSDQueryByGTINResponseType queryData(String gtin, CountryCodeType targetMarket, String dataVersion, String aggregatorUrl) throws Exception{
 
 		AggregatorAggregatorQueryInterface aaqi = new AggregatorAggregatorQueryInterface();
@@ -156,7 +183,11 @@ public class MongoDataBase {
 
 	}
 
-	//Insert client key
+	/**
+	 * Insert client key
+	 * @param serviceUrl
+	 * @param key
+	 */
 	@SuppressWarnings("resource")
 	public void insertKeyClient(String serviceUrl, String key){
 
@@ -171,7 +202,11 @@ public class MongoDataBase {
 
 	}
 
-	//Find client key
+	/**
+	 * Find client key
+	 * @param serviceUrl
+	 * @return
+	 */
 	@SuppressWarnings({ "resource" })
 	public String findKeyClient(String serviceUrl){
 
@@ -183,7 +218,11 @@ public class MongoDataBase {
 		return map.getKey();
 	}
 
-	//Insert server key
+	/**
+	 * Insert server key
+	 * @param clientGln
+	 * @param key
+	 */
 	@SuppressWarnings("resource")
 	public void insertKeyServer(String clientGln, String key){
 
@@ -198,7 +237,11 @@ public class MongoDataBase {
 
 	}
 
-	//Find server key
+	/**
+	 * Find server key
+	 * @param clientGln
+	 * @return
+	 */
 	@SuppressWarnings({ "resource" })
 	public String findKeyServer(String clientGln){
 

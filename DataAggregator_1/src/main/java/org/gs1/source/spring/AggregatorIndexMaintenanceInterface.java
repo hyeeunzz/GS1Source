@@ -11,7 +11,12 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 public class AggregatorIndexMaintenanceInterface {
 
-	//Add zone in ONS
+	/**
+	 * Add zone in ONS
+	 * @param request
+	 * @return
+	 * @throws IOException
+	 */
 	public TSDIndexMaintenanceResponseType add(TSDIndexMaintenanceRequestType request) throws IOException{
 
 		String url = "http://54.64.163.75/atomiadns.json/AddZone";

@@ -3,13 +3,18 @@ package org.gs1.source.spring;
 import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
 public class TLSConnection {
 
-	//Connect client to server using TLS method
+	/**
+	 * Connect client to server using TLS method
+	 * @return
+	 * @throws Exception
+	 */
 	public SSLContext clientConnection() throws Exception {
 
 		KeyStore keyStore = KeyStore.getInstance("JKS");

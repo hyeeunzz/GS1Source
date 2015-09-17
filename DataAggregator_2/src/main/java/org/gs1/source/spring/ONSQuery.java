@@ -10,7 +10,11 @@ import org.xbill.DNS.Type;
 
 public class ONSQuery {
 	
-	//Query to ONS
+	/**
+	 * Query to ONS
+	 * @param gtin
+	 * @return
+	 */
 	public List<String> query(String gtin){
 		
 		String domain = (new ZONEConvert()).convert(gtin);

@@ -30,7 +30,16 @@ public class ProductData {
 		productdata = of.createTSDProductDataType();
 	}
 
-	//Set Product Data with parameters
+	/**
+	 * Set Product Data with parameters
+	 * @param gtin
+	 * @param tmarket
+	 * @param gln
+	 * @param pname
+	 * @param ttl
+	 * @param pdrecord
+	 * @param avplist
+	 */
 	public void make(String gtin, CountryCodeType tmarket, String gln, String pname, Duration ttl, List<TSDProductDataRecordType> pdrecord, TSDAttributeValuePairListType avplist){
 
 		productdata.setGtin(gtin);
@@ -44,7 +53,10 @@ public class ProductData {
 		rs.setProductData(productdata);
 	}
 
-	//Set Product Data with TSDProductDataType
+	/**
+	 * Set Product Data with TSDProductDataType
+	 * @param pd
+	 */
 	public void make(TSDProductDataType pd){
 
 		productdata.setGtin(pd.getGtin());
@@ -58,7 +70,12 @@ public class ProductData {
 		rs.setProductData(productdata);
 	}
 
-	//marshall to xml form string
+	/**
+	 * marshall to xml form string
+	 * @return
+	 * @throws JAXBException
+	 * @throws UnsupportedEncodingException
+	 */
 	public String marshal() throws JAXBException, UnsupportedEncodingException{
 
 		JAXBElement<TSDQueryByGTINResponseType> r = of.createQueryByGtinResponse(rs);
