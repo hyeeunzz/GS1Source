@@ -7,7 +7,7 @@
 	xmlns:nutritional_product_information_module="urn:gs1:tsd:nutritional_product_information_module:xsd:1"
 	xsi:schemaLocation="urn:gs1:tsd:query_by_gtin_response:xsd:1 QueryByGtinResponse.xsd">
 	<productData>
-		<gtin>38801000315198</gtin>
+		<gtin>08801000315198</gtin>
 		<targetMarket codeListVersion="1.1">410</targetMarket>
 		<informationProviderGLN>5006351092233</informationProviderGLN>
 		<informationProviderName>masanchungwa</informationProviderName>
