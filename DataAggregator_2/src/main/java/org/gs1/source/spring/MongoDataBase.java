@@ -3,6 +3,7 @@ package org.gs1.source.spring;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.UnknownHostException;
+import java.util.Properties;
 
 import org.gs1.source.tsd.CountryCodeType;
 import org.gs1.source.tsd.ObjectFactory;
@@ -28,6 +29,7 @@ public class MongoDataBase {
 
 	@SuppressWarnings("unused")
 	private static final Log log = LogFactory.getLog(MongoDataBase.class);
+	private static final String PROPERTY_PATH = "aggregator.properties";
 
 	/**
 	 * Clear data in collection productData
@@ -82,10 +84,14 @@ public class MongoDataBase {
 		
 		//Call AIMI add method
 		AggregatorIndexMaintenanceInterface aimi = new AggregatorIndexMaintenanceInterface();
+
+		Properties prop = new Properties();
+		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
+		String aggregatorUrl = prop.getProperty("aggregatorUrl");
 		
 		TSDIndexMaintenanceRequestType request = new TSDIndexMaintenanceRequestType();
 		request.setGtin(rs.getProductData().getGtin());
-		request.setAggregatorUrl("https://143.248.53.238:8443/DataAggregator_2/");
+		request.setAggregatorUrl(aggregatorUrl);
 		
 		aimi.add(request);
 
@@ -119,7 +125,7 @@ public class MongoDataBase {
 
 			//No peer Aggregator which has data
 			if(aggregatorUrl == null){
-				System.out.println("There is no product of GTIN " + gtin + ".");
+				System.out.println("There is no product of GTIN " + gtin + "(There is no peer Data Aggregator which has data).");
 				return null;
 			}
 
@@ -128,7 +134,7 @@ public class MongoDataBase {
 
 			//No data in peer Aggregator
 			if(rs == null){
-				System.out.println("There is no product of GTIN " + gtin + ".");
+				System.out.println("There is no product of GTIN " + gtin + "(There is no data in peer Data Aggregator).");
 				return null;
 			}
 		}

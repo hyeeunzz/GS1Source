@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -19,6 +20,8 @@ import org.gs1.source.tsd.ObjectFactory;
 import org.gs1.source.tsd.TSDQueryByGTINResponseType;
 
 public class AggregatorAggregatorQueryInterface {
+	
+	private static final String PROPERTY_PATH = "aggregator.properties";
 
 	/**
 	 * AAQI query
@@ -35,7 +38,9 @@ public class AggregatorAggregatorQueryInterface {
 		String key = mongo.findKeyClient(aggregatorUrl);
 
 		//clientGln of this Data Aggregator
-		String clientGln = "3504220000305";
+		Properties prop = new Properties();
+		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
+		String clientGln = prop.getProperty("clientGln");
 
 		//URL which is a parameter of MacEncode
 		String mac_url = "v1/ProductData/gtin/" + request.getGtin() + "?targetMarket=" + request.getTargetMarket().getValue()

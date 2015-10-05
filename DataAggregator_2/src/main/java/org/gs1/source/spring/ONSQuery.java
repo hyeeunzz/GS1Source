@@ -24,7 +24,7 @@ public class ONSQuery {
 		try {
 			Lookup lookup = new Lookup(domain, Type.NAPTR);
 			//KAIST IP address
-			lookup.setResolver(new SimpleResolver("143.248.1.177"));
+			lookup.setResolver(new SimpleResolver("8.8.8.8"));
 			lookup.setCache(null);
 			result = lookup.run();
 			int code = lookup.getResult();

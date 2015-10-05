@@ -1,9 +1,11 @@
 package org.gs1.source.spring;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -22,22 +24,28 @@ import org.springframework.web.servlet.ModelAndView;
 public class HomeController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
+	private static final String PROPERTY_PATH = "aggregator.properties";
 	
 	/**
 	 * Data Aggregator home page
 	 * @param locale
 	 * @param model
 	 * @return
+	 * @throws IOException 
 	 */
 	@RequestMapping(value = "/", method = RequestMethod.GET)
-	public String home(Locale locale, Model model) {
-		logger.info("Welcome FSS Data Aggregator no.2! The client locale is {}.", locale);
+	public String home(Locale locale, Model model) throws IOException {
+		Properties prop = new Properties();
+		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
+		String aggregatorNo = prop.getProperty("aggregatorNo");
+		logger.info("Welcome FSS Data Aggregator no." + aggregatorNo + "! The client locale is {}.", locale);
 		
 		Date date = new Date();
 		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale);
 		
 		String formattedDate = dateFormat.format(date);
 		
+		model.addAttribute("aggregatorNo", aggregatorNo);
 		model.addAttribute("serverTime", formattedDate );
 		
 		return "home";

@@ -1,6 +1,7 @@
 package org.gs1.source.spring;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -11,6 +12,8 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 public class AggregatorIndexMaintenanceInterface {
 
+	private static final String PROPERTY_PATH = "aggregator.properties";
+	
 	/**
 	 * Add zone in ONS
 	 * @param request
@@ -25,7 +28,9 @@ public class AggregatorIndexMaintenanceInterface {
 
 		HttpPost postRequest = new HttpPost(url);
 
-		String admin_username = "ch200356@resl.kaist.ac.kr";
+		Properties prop = new Properties();
+		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
+		String admin_username = prop.getProperty("admin_username");
 		String zone_name = (new ZONEConvert()).convert(request.getGtin());
 		String parameters = "\"" + zone_name + "\", " + "0" + ", \"" + "ns." + zone_name + ".\", \"" + "root." + zone_name + ".\", "
 				+ "10800, 3600, 604800, 86400" + ", " + "[\"" + "ns." + zone_name + ".\"]" + ", \"" + "ch200356@resl.kaist.ac.kr" + "\"";
@@ -69,7 +74,9 @@ public class AggregatorIndexMaintenanceInterface {
 
 		HttpPost postRequest = new HttpPost(url);
 
-		String admin_username = "ch200356@resl.kaist.ac.kr";
+		Properties prop = new Properties();
+		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
+		String admin_username = prop.getProperty("admin_username");
 		String parameters = "\"" + (new ZONEConvert()).convert(request.getGtin()) + "\"";
 
 		postRequest.setHeader("X-Auth-Username", admin_username);
@@ -93,8 +100,10 @@ public class AggregatorIndexMaintenanceInterface {
 
 		HttpPost postRequest = new HttpPost(url);
 
-		String admin_username = "ch200356@resl.kaist.ac.kr";
-		String admin_password = "hahajj1021";
+		Properties prop = new Properties();
+		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
+		String admin_username = prop.getProperty("admin_username");
+		String admin_password = prop.getProperty("admin_password");
 
 		postRequest.setHeader("X-Auth-Username", admin_username);
 		postRequest.setHeader("X-Auth-Password", admin_password);
@@ -118,7 +127,9 @@ public class AggregatorIndexMaintenanceInterface {
 
 		HttpPost postRequest = new HttpPost(url);
 
-		String admin_username = "ch200356@resl.kaist.ac.kr";
+		Properties prop = new Properties();
+		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
+		String admin_username = prop.getProperty("admin_username");
 		String zone_name = (new ZONEConvert()).convert(request.getGtin());
 		//NAPTR record
 		String rdata_1 = "0 0 \\\"U\\\" \\\"http://www.ons.gs1.org/tsd/servicetype-aaqi\\\" \\\"!^.*$!"
