@@ -2,12 +2,13 @@ package org.gs1.source.service.mongo;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
+import org.gs1.source.service.DataQueryObject;
 import org.gs1.source.tsd.CountryCodeType;
 import org.gs1.source.tsd.TSDQueryByGTINResponseType;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Query;
 
-public class MongoQuery {
+public class MongoQuery implements DataQueryObject{
 	
 	private MongoOperations mongoOps;
 	

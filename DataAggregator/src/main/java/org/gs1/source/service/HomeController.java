@@ -88,8 +88,9 @@ public class HomeController {
 				targetMarket.setCodeListVersion(dataVersion);
 				targetMarket.setValue(targetMarketString);
 
-				DataQuery dataQuery = new DataQuery();
-				String str = dataQuery.query(gtin, targetMarket, dataVersion);
+				DataQueryFactory dataQueryFactory = new DataQueryFactory();
+				QueryService queryService = new QueryService(dataQueryFactory, "mongo");
+				String str = queryService.query(gtin, targetMarket, dataVersion);
 
 				//There is no product data of such gtin & target market
 				if(str == null){

@@ -10,7 +10,7 @@ public class Test {
 
 	public static void main(String[] args) throws Exception {
 
-		String gtin = "08801000651526";
+		String gtin = "08801111051521";
 		CountryCodeType targetMarket = new CountryCodeType();
 		targetMarket.setCodeListVersion("1.1");
 		targetMarket.setValue("840");
