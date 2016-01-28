@@ -44,4 +44,9 @@ public class MongoDAO extends DataAccessObject {
 
 	}
 
+	public void insertDB(TSDQueryByGTINResponseType rs) {
+
+		mongoOps.insert(rs, "productData");
+	}
+
 }

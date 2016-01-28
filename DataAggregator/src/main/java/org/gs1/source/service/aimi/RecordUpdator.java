@@ -12,20 +12,23 @@ import org.gs1.source.service.Test;
 import org.gs1.source.service.type.TSDIndexMaintenanceRequestType;
 import org.gs1.source.service.util.ZONEConvert;
 
-public class Record {
+public class RecordUpdator {
 	
 	private static final String PROPERTY_PATH = "aggregator.properties";
 
 	public void add(TSDIndexMaintenanceRequestType request, String token) throws ClientProtocolException, IOException {
 
-		String url = "http://54.64.163.75/atomiadns.json/AddDnsRecords";
+		Properties prop = new Properties();
+		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
+		String ons_ip = prop.getProperty("ons_ip");
+		
+		String url = ons_ip + "atomiadns.json/AddDnsRecords";
 
 		HttpClient client = HttpClientBuilder.create().build();
 
 		HttpPost postRequest = new HttpPost(url);
 
-		Properties prop = new Properties();
-		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
+		
 		String admin_username = prop.getProperty("admin_username");
 		String zone_name = (new ZONEConvert()).convert(request.getGtin());
 		//NAPTR record

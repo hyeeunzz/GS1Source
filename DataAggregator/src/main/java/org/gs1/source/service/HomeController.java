@@ -9,12 +9,12 @@ import java.util.concurrent.Callable;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.gs1.source.service.aaqi.DAOFactory;
 import org.gs1.source.service.aaqi.QueryProcessor;
 import org.gs1.source.service.aaqi.QueryReceiver;
-import org.gs1.source.service.mongo.MongoInsert;
-import org.gs1.source.service.mongo.ServerKey;
+import org.gs1.source.service.mongo.MongoServerKey;
+import org.gs1.source.service.registration.Registerar;
 import org.gs1.source.service.util.MacEncode;
-import org.gs1.source.service.util.XmlValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -31,9 +31,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 public class HomeController {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
-	
+
 	/**
 	 * Data Aggregator home page
 	 * @param locale
@@ -43,19 +43,19 @@ public class HomeController {
 	 */
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String home(Locale locale, Model model) throws IOException {
-		
+
 		logger.info("Welcome FSS Data Aggregator! The client locale is {}.", locale);
-		
+
 		Date date = new Date();
 		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale);
-		
+
 		String formattedDate = dateFormat.format(date);
-		
+
 		model.addAttribute("serverTime", formattedDate );
-		
+
 		return "home";
 	}
-	
+
 	/**
 	 * Product Data query page
 	 * @param gtin
@@ -78,22 +78,22 @@ public class HomeController {
 
 			@Override
 			public ModelAndView call() throws Exception {
-				
+
 				logger.info("Start query...");
-				
+
 				ModelAndView model = new ModelAndView();
 				model.setViewName("queryByGTIN");
 
 				QueryReceiver queryReceiver = new QueryReceiver(gtin, targetMarketValue, dataVersion, clientGln, mac);
 				QueryProcessor queryProcessor = queryReceiver.getProcessor();
-				
+
 				String str = queryProcessor.query();
 
 				//There is no product data of such gtin & target market
 				if(str == null){
 					model.addObject("ResponseString", "There is no product of GTIN " + gtin + ".");
 					model.addObject("payloadMac", "0");
-					
+
 					logger.info("Complete query...(No data)");
 
 					return model;
@@ -101,11 +101,11 @@ public class HomeController {
 
 				//case 1) AAQI interface
 				if(queryProcessor.isAAQI()){
-					
-					ServerKey server = new ServerKey();
+
+					MongoServerKey server = new MongoServerKey();
 					String key = server.queryKey(clientGln);
 					MacEncode macEncode = new MacEncode();
-					
+
 					int auth = queryProcessor.authenticate(macEncode, key);
 
 					if(auth == QueryProcessor.AUTHENTICATED) {
@@ -116,9 +116,9 @@ public class HomeController {
 					}else if(auth == QueryProcessor.NOT_AUTHENTICATED) {
 						model.addObject("ResponseString", "Exception: mac is not identical.");
 						model.addObject("payloadMac", "0");
-						
+
 						logger.info("Complete query...(Not Authenticated)");
-						
+
 						return model;
 					}
 				}
@@ -127,17 +127,17 @@ public class HomeController {
 					model.addObject("ResponseString", str);
 					model.addObject("payloadMac", "0");
 				}
-				
+
 				logger.info("Complete query...");
-				
+
 				return model;
-				
+
 			}
-			
+
 		};
-		
+
 	}
-	
+
 	/**
 	 * Product data register page
 	 * @param locale
@@ -150,7 +150,7 @@ public class HomeController {
 		return "register";
 
 	}
-	
+
 	/**
 	 * Product data registered page
 	 * @param request
@@ -160,46 +160,36 @@ public class HomeController {
 	 */
 	@RequestMapping(value = "/registered", method = RequestMethod.POST)
 	public String registered(HttpServletRequest request, Model model) throws UnsupportedEncodingException {
-		
+
 		request.setCharacterEncoding("UTF-8");
 		return "registered";
-		
+
 	}
-	
+
 	@RequestMapping(value = "/postdata", method = RequestMethod.POST, consumes = "application/xml")
 	public ResponseEntity<String> postData(@RequestBody String xmldata) throws Exception {
-		
-//		if (userID.compareTo("kaist") != 0 || password.compareTo("reslresl") != 0) {
-//			System.out.println("Not Authenticated");
-//			return new ResponseEntity<String>(new String("Not Authenticated"), HttpStatus.BAD_REQUEST);
-//		}
-		
-		XmlValidation validation = new XmlValidation();
 
-		if (xmldata == ""){
-			System.out.println("The string is empty.");
-			return new ResponseEntity<String>(new String("The string is empty."), HttpStatus.OK);
-		}
-		else if (validation.xmlValidation(xmldata) == false){
-		
-			System.out.println("The xml data is not valid.");
-			return new ResponseEntity<String>(new String("The xml data is not valid."), HttpStatus.OK);
-		}
-		else {
-			MongoInsert mongoInsert = new MongoInsert();
-			String s = mongoInsert.insertData(xmldata);
-			if (s == null) {
-				
-				System.out.println("The product is already exists.");
-				return new ResponseEntity<String>(new String("The product is already exists."), HttpStatus.OK);
-				
-			}else {
-				
-				System.out.println("Product Data of GTIN " + s + " is registered at Aggregator.");
-				return new ResponseEntity<String>(new String("Product Data of GTIN " + s + " is registered at Aggregator."), HttpStatus.OK);
-			}
-		}
+		//		if (userID.compareTo("kaist") != 0 || password.compareTo("reslresl") != 0) {
+		//			System.out.println("Not Authenticated");
+		//			return new ResponseEntity<String>(new String("Not Authenticated"), HttpStatus.BAD_REQUEST);
+		//		}
 
+		Registerar registerar = new Registerar(new DAOFactory(), "mongo");
+		int result = registerar.register(xmldata);
+
+		if (result == Registerar.NODATA) {
+			System.out.println("The xmldata is empty.");
+			return new ResponseEntity<String>(new String("The xmldata is empty."), HttpStatus.OK);
+		} else if (result == Registerar.NOT_VALID) {
+			System.out.println("The xmldata is not valid.");
+			return new ResponseEntity<String>(new String("The xmldata is not valid."), HttpStatus.OK);
+		} else if (result == Registerar.EXISTED) {
+			System.out.println("The product is already exists.");
+			return new ResponseEntity<String>(new String("The product is already exists."), HttpStatus.OK);
+		} else {
+			System.out.println("The product is registered at Aggregator.");
+			return new ResponseEntity<String>(new String("The product is registered at Aggregator."), HttpStatus.OK);
+		}
 	}
 
 }

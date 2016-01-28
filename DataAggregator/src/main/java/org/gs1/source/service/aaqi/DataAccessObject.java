@@ -30,4 +30,6 @@ public abstract class DataAccessObject {
 	public abstract TSDQueryByGTINResponseType queryDB(String gtin, CountryCodeType targetMarket);
 	public abstract TSDQueryByGTINResponseType queryDB(String gtin);
 	
+	public abstract void insertDB(TSDQueryByGTINResponseType rs);
+	
 }

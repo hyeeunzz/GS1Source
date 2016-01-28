@@ -6,11 +6,11 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 import org.gs1.source.service.type.ServerKeyType;
 import org.springframework.data.mongodb.core.MongoOperations;
 
-public class ServerKey {
+public class MongoServerKey {
 	
 	private MongoOperations mongoOps;
 	
-	public ServerKey() {
+	public MongoServerKey() {
 		
 		MongoInstance mongo = MongoInstance.getInstance();
 		mongoOps = mongo.getMongoOps();

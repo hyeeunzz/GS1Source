@@ -10,7 +10,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 import org.gs1.source.service.Test;
 import org.gs1.source.service.aiqi.AIQIProcessor;
-import org.gs1.source.service.mongo.ClientKey;
+import org.gs1.source.service.mongo.MongoClientKey;
 import org.gs1.source.service.type.TSDQueryByGTINRequestType;
 import org.gs1.source.service.type.TSDQueryIndexByGTINRequestType;
 import org.gs1.source.service.type.TSDQueryIndexByGTINResponseType;
@@ -30,7 +30,6 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 
 	public static final int AUTHENTICATED = 0;
 	public static final int NOT_AUTHENTICATED = 1;
-
 
 	private DAOFactory factory;
 	private String DBtype;
@@ -106,7 +105,7 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 	public TSDQueryByGTINResponseType queryByGtin(TSDQueryByGTINRequestType request) throws Exception{
 
 		//Get client key
-		ClientKey client= new ClientKey();
+		MongoClientKey client= new MongoClientKey();
 		String key = client.queryKey(aggregatorUrl);
 
 		//clientGln of this Data Aggregator
