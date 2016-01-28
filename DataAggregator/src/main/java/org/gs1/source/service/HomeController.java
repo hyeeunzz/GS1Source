@@ -9,12 +9,15 @@ import java.util.concurrent.Callable;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.gs1.source.service.aaqi.Authenticator;
 import org.gs1.source.service.aaqi.DAOFactory;
 import org.gs1.source.service.aaqi.QueryProcessor;
 import org.gs1.source.service.aaqi.QueryReceiver;
 import org.gs1.source.service.mongo.MongoServerKey;
 import org.gs1.source.service.registration.Registerar;
 import org.gs1.source.service.util.MacEncode;
+import org.gs1.source.service.util.POJOConvertor;
+import org.gs1.source.tsd.TSDQueryByGTINResponseType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -87,7 +90,12 @@ public class HomeController {
 				QueryReceiver queryReceiver = new QueryReceiver(gtin, targetMarketValue, dataVersion, clientGln, mac);
 				QueryProcessor queryProcessor = queryReceiver.getProcessor();
 
-				String str = queryProcessor.query();
+				TSDQueryByGTINResponseType rs = queryProcessor.query();
+				
+				//Marshal data to string
+				POJOConvertor convertor = new POJOConvertor();
+				String str = convertor.marshal(rs);
+				logger.info("Marshalling");
 
 				//There is no product data of such gtin & target market
 				if(str == null){
@@ -106,14 +114,15 @@ public class HomeController {
 					String key = server.queryKey(clientGln);
 					MacEncode macEncode = new MacEncode();
 
-					int auth = queryProcessor.authenticate(macEncode, key);
+					Authenticator authenticator = queryReceiver.getAuthenticator();
+					int auth = authenticator.authenticate(macEncode, key);
 
-					if(auth == QueryProcessor.AUTHENTICATED) {
+					if(auth == Authenticator.AUTHENTICATED) {
 						String mac_payload = macEncode.encode(key, str);
 
 						model.addObject("ResponseString", str);
 						model.addObject("payloadMac", mac_payload);
-					}else if(auth == QueryProcessor.NOT_AUTHENTICATED) {
+					}else if(auth == Authenticator.NOT_AUTHENTICATED) {
 						model.addObject("ResponseString", "Exception: mac is not identical.");
 						model.addObject("payloadMac", "0");
 

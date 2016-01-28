@@ -13,18 +13,18 @@ public class Test {
 		QueryProcessor processor = queryReceiver.getProcessor();
 
 		for(int i = 0; i < 3; i ++) {
-			String str = processor.query();
+			//String str = processor.query();
 
-			System.out.println(str);
+			//System.out.println(str);
 		}
 		
 		QueryReceiver queryReceiver1 = new QueryReceiver(gtin, "410", "1.1", "0", "0");
 		QueryProcessor processor1 = queryReceiver1.getProcessor();
 		
 		for(int i = 0; i < 3; i ++) {
-			String str = processor1.query();
+			//String str = processor1.query();
 
-			System.out.println(str);
+			//System.out.println(str);
 		}
 
 	}

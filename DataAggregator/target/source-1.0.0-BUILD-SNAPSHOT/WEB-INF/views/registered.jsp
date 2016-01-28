@@ -7,27 +7,22 @@
 <title>Registered Page</title>
 </head>
 <body>
-<%@page import="org.gs1.source.service.mongo.MongoInsert" %>
-<%@page import="java.util.*" %>
-<%@page import="javax.xml.datatype.Duration" %>
-<%@page import="org.gs1.source.tsd.*" %>
-<%@page import="org.gs1.source.service.util.XmlValidator" %>
+<%@page import="org.gs1.source.service.aaqi.DAOFactory" %>
+<%@page import="org.gs1.source.service.registration.Registerar" %>
 <%
 	String xmldata = request.getParameter("xmldata");
-	XmlValidator validation = new XmlValidator();
+	Registerar registerar = new Registerar(new DAOFactory(), "mongo");
 
-	if (xmldata == "")
+	int result = registerar.register(xmldata);
+	if (result == Registerar.NODATA)
 		out.println("<h2>Please fill the blank.<h2>");
-	else if (validation.xmlValidation(xmldata) == false)
+	else if (result == Registerar.NOT_VALID)
 		out.println("<h2>The xml data is not valid.<h2>");
-	else {
-		MongoInsert mongo = new MongoInsert();
-		String s = mongo.insertData(xmldata);
-		if (s == null)
-	out.println("<h1>The product is already exists.<h1>");
-		else
-	out.println("<h1>Product Data of GTIN " + s + " is registered at Aggregator.<h1>");
-	}
+	else if (result == Registerar.EXISTED)
+		out.println("<h1>The product is already exists.<h1>");
+	else
+		out.println("<h1>The product is registered at Aggregator.<h1>");
+	
 %>
 </body>
 </html>

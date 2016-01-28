@@ -34,9 +34,15 @@ public class QueryReceiver {
 		DAOFactory factory = new DAOFactory();
 		QueryProcessor processor = new QueryProcessor(factory, "mongo", request);
 		processor.setClientGln(clientGln);
-		processor.setMac(mac);
 		
 		return processor;
+	}
+	
+	public Authenticator getAuthenticator() {
+		
+		Authenticator authenticator = new Authenticator(gtin, targetMarketValue, dataVersion, clientGln, mac);
+		
+		return authenticator;
 	}
 
 }

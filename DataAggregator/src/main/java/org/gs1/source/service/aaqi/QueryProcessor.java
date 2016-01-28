@@ -28,18 +28,13 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 
 	private static final String PROPERTY_PATH = "aggregator.properties";
 
-	public static final int AUTHENTICATED = 0;
-	public static final int NOT_AUTHENTICATED = 1;
-
 	private DAOFactory factory;
 	private String DBtype;
 	private TSDQueryByGTINRequestType request;
 	private String aggregatorUrl;
 	private String gtin;
 	private CountryCodeType targetMarket;
-	private String dataVersion;
 	private String clientGln;
-	private String mac;
 
 	public QueryProcessor(DAOFactory factory, String DBtype, TSDQueryByGTINRequestType request) {
 
@@ -48,23 +43,22 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 		this.request = request;
 		this.gtin = request.getGtin();
 		this.targetMarket = request.getTargetMarket();
-		this.dataVersion = request.getDataVersion();
 		this.aggregatorUrl = null;
 	}
 
-	public String query() throws Exception {
+	public TSDQueryByGTINResponseType query() throws Exception {
 
 		DataAccessObject dao = factory.getDAO(DBtype);
 
-		TSDQueryByGTINResponseType response = dao.queryCache(gtin, targetMarket);
+		TSDQueryByGTINResponseType rs = dao.queryCache(gtin, targetMarket);
 
-		if(response != null) {
+		if(rs != null) {
 			logger.info("Get Data from Cache");
 		} else {
-			response = dao.queryDB(gtin, targetMarket);
-			if(response != null) {
+			rs = dao.queryDB(gtin, targetMarket);
+			if(rs != null) {
 				logger.info("Get Data from Mongo");
-				dao.insertCache(response);
+				dao.insertCache(rs);
 			} else {
 				//Call AIQI
 				TSDQueryIndexByGTINRequestType aiqiRequest = new TSDQueryIndexByGTINRequestType();
@@ -75,23 +69,18 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 				TSDQueryIndexByGTINResponseType aiqiResponse = aiqiProcessor.queryByGtin(aiqiRequest);
 				aggregatorUrl = aiqiResponse.getIndexEntry().getDataAggregatorService().getBaseUrl();
 
-				response = queryByGtin(request);
-				if(response != null) {
+				rs = queryByGtin(request);
+				if(rs != null) {
 					logger.info("Get Data from AAQI");
-					dao.insertCache(response);
+					dao.insertCache(rs);
 				} else {
 					logger.info("No Data");
 					return null;
 				}
 			}
 		}
-
-		//Marshal data to xml form string
-		POJOConvertor convertor = new POJOConvertor();
-		String str = convertor.marshal(response);
-		logger.info("Marshalling");
-
-		return str;
+		
+		return rs;
 
 	}
 
@@ -176,20 +165,6 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 
 	}
 
-	public int authenticate(MacEncode macEncode, String key) throws Exception {
-
-		MacUrlGenerator macUrlGenerator = new MacUrlGenerator(gtin, targetMarket.getValue(), dataVersion, clientGln);
-		String mac_url = macUrlGenerator.getMacUrl();
-		
-		String mac_check = macEncode.encode(key, mac_url);
-
-		if(mac.compareTo(mac_check) != 0) {
-			return NOT_AUTHENTICATED;
-		}
-
-		return AUTHENTICATED;
-	}
-
 	public boolean isAAQI() {
 
 		if(clientGln.compareTo("0") != 0) {
@@ -199,18 +174,9 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 		return false;
 	}
 
-	public void setDataVersion(String value) {
-
-		this.dataVersion = value;
-	}
-
 	public void setClientGln(String value) {
 
 		this.clientGln = value;
 	}
 
-	public void setMac(String value) {
-
-		this.mac = value;
-	}
 }
