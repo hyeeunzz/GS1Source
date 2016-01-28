@@ -3,9 +3,9 @@ package org.gs1.source.service.mongo;
 import java.util.Properties;
 
 import org.gs1.source.service.Test;
-import org.gs1.source.service.aimi.AggregatorIndexMaintenanceInterface;
+import org.gs1.source.service.aimi.AIMI;
 import org.gs1.source.service.type.TSDIndexMaintenanceRequestType;
-import org.gs1.source.service.util.ProductDataUnmarshaller;
+import org.gs1.source.service.util.POJOConvertor;
 import org.gs1.source.tsd.TSDQueryByGTINResponseType;
 import org.springframework.data.mongodb.core.MongoOperations;
 
@@ -28,8 +28,8 @@ public class MongoInsert {
 		String aggregatorUrl = prop.getProperty("aggregatorUrl");
 
 		//Unmarshall productData of xml form
-		ProductDataUnmarshaller unmarshaller = new ProductDataUnmarshaller();
-		TSDQueryByGTINResponseType rs = unmarshaller.unmarshal(xmldata);
+		POJOConvertor convertor = new POJOConvertor();
+		TSDQueryByGTINResponseType rs = convertor.unmarshal(xmldata);
 		
 		//Check there exists the same data
 		MongoQuery mongoQuery = new MongoQuery();
@@ -59,7 +59,7 @@ public class MongoInsert {
 		request.setGtin(gtin);
 		request.setAggregatorUrl(aggregatorUrl);
 		
-		AggregatorIndexMaintenanceInterface aimi = new AggregatorIndexMaintenanceInterface();
+		AIMI aimi = new AIMI();
 		aimi.add(request);
 
 		return gtin;

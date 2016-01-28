@@ -9,12 +9,12 @@ import java.util.concurrent.Callable;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.gs1.source.service.aaqi.QueryProcessor;
+import org.gs1.source.service.aaqi.QueryReceiver;
 import org.gs1.source.service.mongo.MongoInsert;
 import org.gs1.source.service.mongo.ServerKey;
 import org.gs1.source.service.util.MacEncode;
-import org.gs1.source.service.util.MacUrlGenerator;
 import org.gs1.source.service.util.XmlValidation;
-import org.gs1.source.tsd.CountryCodeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -69,7 +69,7 @@ public class HomeController {
 	@Async
 	@RequestMapping(value = "/v1/ProductData/gtin/{gtin:.+}", method = RequestMethod.GET)
 	public Callable<ModelAndView> queryByGTIN(@PathVariable("gtin") final String gtin,
-			@RequestParam(value = "targetMarket") final String targetMarketString,
+			@RequestParam(value = "targetMarket") final String targetMarketValue,
 			@RequestParam(value = "dataVersion", defaultValue = "1.1") final String dataVersion,
 			@RequestParam(value = "clientGln", defaultValue = "0") final String clientGln,
 			@RequestParam(value = "mac", defaultValue = "0") final String mac) throws Exception {
@@ -84,13 +84,10 @@ public class HomeController {
 				ModelAndView model = new ModelAndView();
 				model.setViewName("queryByGTIN");
 
-				CountryCodeType targetMarket = new CountryCodeType();
-				targetMarket.setCodeListVersion(dataVersion);
-				targetMarket.setValue(targetMarketString);
-
-				DataQueryFactory dataQueryFactory = new DataQueryFactory();
-				QueryService queryService = new QueryService(dataQueryFactory, "mongo");
-				String str = queryService.query(gtin, targetMarket, dataVersion);
+				QueryReceiver queryReceiver = new QueryReceiver(gtin, targetMarketValue, dataVersion, clientGln, mac);
+				QueryProcessor queryProcessor = queryReceiver.getProcessor();
+				
+				String str = queryProcessor.query();
 
 				//There is no product data of such gtin & target market
 				if(str == null){
@@ -103,17 +100,20 @@ public class HomeController {
 				}
 
 				//case 1) AAQI interface
-				if(clientGln.compareTo("0") != 0){
+				if(queryProcessor.isAAQI()){
+					
 					ServerKey server = new ServerKey();
 					String key = server.queryKey(clientGln);
-					
-					MacUrlGenerator macUrlGenerator = new MacUrlGenerator(gtin, targetMarket, dataVersion, clientGln);
-					String mac_url = macUrlGenerator.getMacUrl();
-					
 					MacEncode macEncode = new MacEncode();
-					String mac_check = macEncode.encode(key, mac_url);
+					
+					int auth = queryProcessor.authenticate(macEncode, key);
 
-					if(mac.compareTo(mac_check) != 0){
+					if(auth == QueryProcessor.AUTHENTICATED) {
+						String mac_payload = macEncode.encode(key, str);
+
+						model.addObject("ResponseString", str);
+						model.addObject("payloadMac", mac_payload);
+					}else if(auth == QueryProcessor.NOT_AUTHENTICATED) {
 						model.addObject("ResponseString", "Exception: mac is not identical.");
 						model.addObject("payloadMac", "0");
 						
@@ -121,11 +121,6 @@ public class HomeController {
 						
 						return model;
 					}
-
-					String mac_payload = macEncode.encode(key, str);
-
-					model.addObject("ResponseString", str);
-					model.addObject("payloadMac", mac_payload);
 				}
 				//case 2) Not AAQI interface, just present product data in web
 				else{
