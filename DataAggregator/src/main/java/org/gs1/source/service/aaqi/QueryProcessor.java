@@ -8,6 +8,8 @@ import java.util.Properties;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import org.gs1.source.service.DAOFactory;
+import org.gs1.source.service.DataAccessObject;
 import org.gs1.source.service.Test;
 import org.gs1.source.service.aiqi.AIQIProcessor;
 import org.gs1.source.service.mongo.MongoClientKey;
@@ -50,7 +52,7 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 
 		DataAccessObject dao = factory.getDAO(DBtype);
 
-		TSDQueryByGTINResponseType rs = dao.queryCache(gtin, targetMarket);
+		TSDQueryByGTINResponseType rs = dao.queryCache(gtin, targetMarket.getValue());
 
 		if(rs != null) {
 			logger.info("Get Data from Cache");

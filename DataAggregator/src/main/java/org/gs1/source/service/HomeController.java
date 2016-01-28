@@ -10,7 +10,6 @@ import java.util.concurrent.Callable;
 import javax.servlet.http.HttpServletRequest;
 
 import org.gs1.source.service.aaqi.Authenticator;
-import org.gs1.source.service.aaqi.DAOFactory;
 import org.gs1.source.service.aaqi.QueryProcessor;
 import org.gs1.source.service.aaqi.QueryReceiver;
 import org.gs1.source.service.mongo.MongoServerKey;

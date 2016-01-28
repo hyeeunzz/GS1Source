@@ -3,7 +3,6 @@ package org.gs1.source.service;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.gs1.source.service.type.CacheKeyType;
 import org.gs1.source.tsd.TSDQueryByGTINResponseType;
 
 public class DataCache {
@@ -12,12 +11,12 @@ public class DataCache {
 
 	public static final int CACHE_SIZE = 30;
 
-	private HashMap<CacheKeyType, TSDQueryByGTINResponseType> keyMap;
+	private HashMap<String, TSDQueryByGTINResponseType> keyMap;
 	private ArrayList<TSDQueryByGTINResponseType> cacheList;
 	private int cacheSize = CACHE_SIZE;
 
 	private DataCache() {
-		keyMap = new HashMap<CacheKeyType, TSDQueryByGTINResponseType>();
+		keyMap = new HashMap<String, TSDQueryByGTINResponseType>();
 		cacheList = new ArrayList<TSDQueryByGTINResponseType>(cacheSize);
 	}
 
@@ -29,7 +28,7 @@ public class DataCache {
 		return instance;
 	}
 
-	public TSDQueryByGTINResponseType find(CacheKeyType key) {
+	public TSDQueryByGTINResponseType find(String key) {
 
 		TSDQueryByGTINResponseType rs = (TSDQueryByGTINResponseType) keyMap.get(key);
 
@@ -41,11 +40,11 @@ public class DataCache {
 		return rs;
 	}
 
-	public void put(CacheKeyType key, TSDQueryByGTINResponseType rs) {
+	public void put(String key, TSDQueryByGTINResponseType rs) {
 
 		if(cacheSize == cacheList.size()) {
-			TSDQueryByGTINResponseType lastrs = (TSDQueryByGTINResponseType) cacheList.remove(cacheSize-1);
-			keyMap.remove(CacheKeyType.getInstance(lastrs.getProductData().getGtin(), lastrs.getProductData().getTargetMarket()));
+			TSDQueryByGTINResponseType last_rs = (TSDQueryByGTINResponseType) cacheList.remove(cacheSize-1);
+			keyMap.remove(last_rs.getProductData().getGtin() + last_rs.getProductData().getTargetMarket().getValue());
 		}
 
 		keyMap.put(key, rs);

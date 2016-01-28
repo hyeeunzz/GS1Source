@@ -7,7 +7,7 @@
 <title>Registered Page</title>
 </head>
 <body>
-<%@page import="org.gs1.source.service.aaqi.DAOFactory" %>
+<%@page import="org.gs1.source.service.DAOFactory" %>
 <%@page import="org.gs1.source.service.registration.Registerar" %>
 <%
 	String xmldata = request.getParameter("xmldata");
