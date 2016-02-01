@@ -14,7 +14,7 @@ public class Authenticator {
 	private String dataVersion;
 	private String mac;
 	
-	public Authenticator(String gtin, String targetMarketValue, String clientGln, String dataVersion, String mac) {
+	public Authenticator(String gtin, String targetMarketValue, String dataVersion, String clientGln, String mac) {
 		
 		this.gtin = gtin;
 		this.targetMarketValue = targetMarketValue;

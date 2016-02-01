@@ -26,7 +26,7 @@ public class ZONEUpdator implements AggregatorIndexMaintenanceInterface {
 
 		Properties prop = new Properties();
 		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
-		ons_ip = prop.getProperty("ons_ip");
+		ons_ip = prop.getProperty("ons_update_ip");
 		admin_username = prop.getProperty("admin_username");
 		admin_password = prop.getProperty("admin_password");
 	}
@@ -40,15 +40,11 @@ public class ZONEUpdator implements AggregatorIndexMaintenanceInterface {
 	 */
 	public TSDIndexMaintenanceResponseType add(TSDIndexMaintenanceRequestType request) throws IOException {
 
-
-
 		String url = ons_ip + "atomiadns.json/AddZone";
 		String token = login();
 		HttpClient client = HttpClientBuilder.create().build();
 
 		HttpPost postRequest = new HttpPost(url);
-
-
 
 		String zone_name = (new ZONEConvert()).convert(request.getGtin());
 		String parameters = "\"" + zone_name + "\", " + "0" + ", \"" + "ns." + zone_name + ".\", \"" + "root." + zone_name + ".\", "

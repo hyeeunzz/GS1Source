@@ -20,7 +20,7 @@ public class RecordUpdator {
 
 		Properties prop = new Properties();
 		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
-		String ons_ip = prop.getProperty("ons_ip");
+		String ons_ip = prop.getProperty("ons_update_ip");
 		
 		String url = ons_ip + "atomiadns.json/AddDnsRecords";
 

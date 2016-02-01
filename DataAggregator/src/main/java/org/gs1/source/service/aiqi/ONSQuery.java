@@ -1,8 +1,11 @@
 package org.gs1.source.service.aiqi;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
+import org.gs1.source.service.Test;
 import org.gs1.source.service.util.ZONEConvert;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.Record;
@@ -11,12 +14,19 @@ import org.xbill.DNS.Type;
 
 public class ONSQuery {
 	
+	private static final String PROPERTY_PATH = "aggregator.properties";
+	
 	/**
 	 * Query to ONS
 	 * @param gtin
 	 * @return
+	 * @throws IOException 
 	 */
-	public List<String> query(String gtin){
+	public List<String> query(String gtin) throws IOException{
+		
+		Properties prop = new Properties();
+		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
+		String ons_ip = prop.getProperty("ons_query_ip");
 		
 		String domain = (new ZONEConvert()).convert(gtin);
 		List<String> res = new ArrayList<String>();
@@ -25,7 +35,7 @@ public class ONSQuery {
 		try {
 			Lookup lookup = new Lookup(domain, Type.NAPTR);
 			//KAIST IP address
-			lookup.setResolver(new SimpleResolver("52.69.212.96"));
+			lookup.setResolver(new SimpleResolver(ons_ip));
 			lookup.setCache(null);
 			result = lookup.run();
 			int code = lookup.getResult();

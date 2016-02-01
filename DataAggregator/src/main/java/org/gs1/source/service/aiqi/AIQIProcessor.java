@@ -1,5 +1,6 @@
 package org.gs1.source.service.aiqi;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.gs1.source.service.type.TSDIndexEntryType;
@@ -9,9 +10,9 @@ import org.gs1.source.service.type.TSDServiceReferenceType;
 
 public class AIQIProcessor implements AggregatorIndexQueryInterface {
 	
-	private TSDQueryIndexByGTINResponseType response = null;
+	private TSDQueryIndexByGTINResponseType response = new TSDQueryIndexByGTINResponseType();
 
-	public TSDQueryIndexByGTINResponseType queryByGtin(TSDQueryIndexByGTINRequestType request) {
+	public TSDQueryIndexByGTINResponseType queryByGtin(TSDQueryIndexByGTINRequestType request) throws IOException {
 
 		ONSQuery onsQuery = new ONSQuery();
 

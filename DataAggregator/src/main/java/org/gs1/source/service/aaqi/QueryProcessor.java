@@ -16,11 +16,18 @@ import org.gs1.source.service.mongo.MongoClientKey;
 import org.gs1.source.service.type.TSDQueryByGTINRequestType;
 import org.gs1.source.service.type.TSDQueryIndexByGTINRequestType;
 import org.gs1.source.service.type.TSDQueryIndexByGTINResponseType;
+import org.gs1.source.service.util.CheckBit;
 import org.gs1.source.service.util.MacEncode;
 import org.gs1.source.service.util.MacUrlGenerator;
 import org.gs1.source.service.util.POJOConvertor;
 import org.gs1.source.tsd.CountryCodeType;
+import org.gs1.source.tsd.TSDInvalidGTINExceptionType;
+import org.gs1.source.tsd.TSDInvalidRequestExceptionType;
+import org.gs1.source.tsd.TSDInvalidTargetMarketExceptionType;
+import org.gs1.source.tsd.TSDNoDataExceptionType;
 import org.gs1.source.tsd.TSDQueryByGTINResponseType;
+import org.gs1.source.tsd.TSDSecurityExceptionType;
+import org.gs1.source.tsd.TSDUnsupportedVersionExceptionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,18 +101,45 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 	 * @throws Exception
 	 */
 	public TSDQueryByGTINResponseType queryByGtin(TSDQueryByGTINRequestType request) throws Exception{
+		
+		TSDQueryByGTINResponseType rs = new TSDQueryByGTINResponseType();
+		
+		String gtin = request.getGtin();
+		String targetMarketValue = request.getTargetMarket().getValue();
+		
+		CheckBit checkBit = new CheckBit();
+		if(gtin.length() < 13 || checkBit.check(gtin) == false) {
+			TSDInvalidGTINExceptionType exception = new TSDInvalidGTINExceptionType();
+			rs.setInvalidGTINException(exception);
+			return rs;
+		}
+		
+		if(targetMarketValue.length() != 3) {
+			TSDInvalidTargetMarketExceptionType exception = new TSDInvalidTargetMarketExceptionType();
+			rs.setInvalidTargetMarketException(exception);
+			return rs;
+		}
+		
+		Properties prop = new Properties();
+		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
+		String currentDataVersion = prop.getProperty("dataVersion");
+		
+		if(Float.parseFloat(request.getDataVersion()) > Float.parseFloat(currentDataVersion)) {
+			TSDUnsupportedVersionExceptionType exception = new TSDUnsupportedVersionExceptionType();
+			rs.setUnsupportedVersionException(exception);
+			return rs;
+		}
 
 		//Get client key
 		MongoClientKey client= new MongoClientKey();
 		String key = client.queryKey(aggregatorUrl);
 
 		//clientGln of this Data Aggregator
-		Properties prop = new Properties();
-		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
+		
 		String clientGln = prop.getProperty("clientGln");
 
 		//URL which is a parameter of MacEncode
-		MacUrlGenerator macUrlGenerator = new MacUrlGenerator(request.getGtin(), request.getTargetMarket().getValue(), request.getDataVersion(), clientGln);
+		MacUrlGenerator macUrlGenerator = new MacUrlGenerator(gtin, targetMarketValue, request.getDataVersion(), clientGln);
 		String mac_url = macUrlGenerator.getMacUrl();
 
 		//Generate MAC
@@ -118,7 +152,10 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 
 		if(con.getResponseCode() != 200) {
 			System.out.println("Failed : HTTP error code : " + con.getResponseCode());
-			return null;
+			
+			TSDInvalidRequestExceptionType exception = new TSDInvalidRequestExceptionType();
+			rs.setInvalidRequestException(exception);
+			return rs;
 		}
 
 		//Print response headers
@@ -147,21 +184,26 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 
 		//Response does not contain data
 		if(response.toString().contains("Exception")) {
-			return null;
+			TSDSecurityExceptionType exception = new TSDSecurityExceptionType();
+			rs.setSecurityException(exception);
+			return rs;
 		}
 
 		//Generate MAC of payload
 		String mac_payload = macEncode.encode(key, response.toString());
 
 		//Check whether payload is reliable
-		if(mac_payload.compareTo(con.getHeaderField("GS1-MAC")) != 0) {
+		if(response.length() == 0 || mac_payload.compareTo(con.getHeaderField("GS1-MAC")) != 0) {
 			System.out.println("Exception: payload is not identical.");
-			return null;
+			TSDNoDataExceptionType exception = new TSDNoDataExceptionType();
+			rs.setNoDataException(exception);
+			return rs;
 		}
 
 		//Unmarshall product data of xml form
 		POJOConvertor convertor = new POJOConvertor();
-		TSDQueryByGTINResponseType rs = convertor.unmarshal(response.toString());
+		rs = convertor.unmarshal(response.toString());
+		System.out.println(rs.getProductData().getGtin());
 
 		return rs;
 
