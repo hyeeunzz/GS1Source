@@ -21,6 +21,7 @@ import org.gs1.source.service.util.MacEncode;
 import org.gs1.source.service.util.MacUrlGenerator;
 import org.gs1.source.service.util.POJOConvertor;
 import org.gs1.source.tsd.CountryCodeType;
+import org.gs1.source.tsd.Description200Type;
 import org.gs1.source.tsd.TSDInvalidGTINExceptionType;
 import org.gs1.source.tsd.TSDInvalidRequestExceptionType;
 import org.gs1.source.tsd.TSDInvalidTargetMarketExceptionType;
@@ -79,12 +80,11 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 				aggregatorUrl = aiqiResponse.getIndexEntry().getDataAggregatorService().getBaseUrl();
 
 				rs = queryByGtin(request);
-				if(rs != null) {
+				if(rs.getProductData() != null) {
 					logger.info("Get Data from AAQI");
 					dao.insertCache(rs);
 				} else {
-					logger.info("No Data");
-					return null;
+					logger.info("Data Query Failed by Exception");
 				}
 			}
 		}
@@ -106,16 +106,41 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 		
 		String gtin = request.getGtin();
 		String targetMarketValue = request.getTargetMarket().getValue();
+		String dataVersion = request.getDataVersion();
+		
+		if(gtin == null || request.getTargetMarket() == null || dataVersion == null) {
+			Description200Type reason = new Description200Type();
+			reason.setLanguageCode("en");
+			reason.setCodeListVersion("1.1");
+			reason.setValue("Invalid Request (No GTIN, No TargetMarket or No DataVersion)");
+			
+			TSDInvalidRequestExceptionType exception = new TSDInvalidRequestExceptionType();
+			exception.setExceptionReason(reason);
+			rs.setInvalidRequestException(exception);
+			return rs;
+		}
 		
 		CheckBit checkBit = new CheckBit();
 		if(gtin.length() < 13 || checkBit.check(gtin) == false) {
+			Description200Type reason = new Description200Type();
+			reason.setLanguageCode("en");
+			reason.setCodeListVersion("1.1");
+			reason.setValue("Invalid GTIN");
+			
 			TSDInvalidGTINExceptionType exception = new TSDInvalidGTINExceptionType();
+			exception.setExceptionReason(reason);
 			rs.setInvalidGTINException(exception);
 			return rs;
 		}
 		
 		if(targetMarketValue.length() != 3) {
+			Description200Type reason = new Description200Type();
+			reason.setLanguageCode("en");
+			reason.setCodeListVersion("1.1");
+			reason.setValue("Invalid TargetMarket");
+			
 			TSDInvalidTargetMarketExceptionType exception = new TSDInvalidTargetMarketExceptionType();
+			exception.setExceptionReason(reason);
 			rs.setInvalidTargetMarketException(exception);
 			return rs;
 		}
@@ -124,8 +149,14 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 		prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
 		String currentDataVersion = prop.getProperty("dataVersion");
 		
-		if(Float.parseFloat(request.getDataVersion()) > Float.parseFloat(currentDataVersion)) {
+		if(Float.parseFloat(dataVersion) > Float.parseFloat(currentDataVersion)) {
+			Description200Type reason = new Description200Type();
+			reason.setLanguageCode("en");
+			reason.setCodeListVersion("1.1");
+			reason.setValue("Unsupported Version");
+			
 			TSDUnsupportedVersionExceptionType exception = new TSDUnsupportedVersionExceptionType();
+			exception.setExceptionReason(reason);
 			rs.setUnsupportedVersionException(exception);
 			return rs;
 		}
@@ -139,7 +170,7 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 		String clientGln = prop.getProperty("clientGln");
 
 		//URL which is a parameter of MacEncode
-		MacUrlGenerator macUrlGenerator = new MacUrlGenerator(gtin, targetMarketValue, request.getDataVersion(), clientGln);
+		MacUrlGenerator macUrlGenerator = new MacUrlGenerator(gtin, targetMarketValue, dataVersion, clientGln);
 		String mac_url = macUrlGenerator.getMacUrl();
 
 		//Generate MAC
@@ -152,10 +183,6 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 
 		if(con.getResponseCode() != 200) {
 			System.out.println("Failed : HTTP error code : " + con.getResponseCode());
-			
-			TSDInvalidRequestExceptionType exception = new TSDInvalidRequestExceptionType();
-			rs.setInvalidRequestException(exception);
-			return rs;
 		}
 
 		//Print response headers
@@ -184,7 +211,19 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 
 		//Response does not contain data
 		if(response.toString().contains("Exception")) {
+			Description200Type reason = new Description200Type();
+			reason.setLanguageCode("en");
+			reason.setCodeListVersion("1.1");
+			reason.setValue("Security (Not Authenticated)");
+			
+			Description200Type contactDescription = new Description200Type();
+			contactDescription.setLanguageCode("en");
+			contactDescription.setCodeListVersion("1.1");
+			contactDescription.setValue("Check Client Key from peer Data Aggregator URL.");
+			
 			TSDSecurityExceptionType exception = new TSDSecurityExceptionType();
+			exception.setExceptionReason(reason);
+			exception.setExceptionContactDescription(contactDescription);
 			rs.setSecurityException(exception);
 			return rs;
 		}
@@ -195,7 +234,14 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 		//Check whether payload is reliable
 		if(response.length() == 0 || mac_payload.compareTo(con.getHeaderField("GS1-MAC")) != 0) {
 			System.out.println("Exception: payload is not identical.");
+			
+			Description200Type reason = new Description200Type();
+			reason.setLanguageCode("en");
+			reason.setCodeListVersion("1.1");
+			reason.setValue("No Data (Invalid Data)");
+			
 			TSDNoDataExceptionType exception = new TSDNoDataExceptionType();
+			exception.setExceptionReason(reason);
 			rs.setNoDataException(exception);
 			return rs;
 		}

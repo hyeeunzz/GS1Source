@@ -96,16 +96,6 @@ public class HomeController {
 				String str = convertor.marshal(rs);
 				logger.info("Marshalling");
 
-				//There is no product data of such gtin & target market
-				if(str == null){
-					model.addObject("ResponseString", "There is no product of GTIN " + gtin + ".");
-					model.addObject("payloadMac", "0");
-
-					logger.info("Complete query...(No data)");
-
-					return model;
-				}
-
 				//case 1) AAQI interface
 				if(queryProcessor.isAAQI()){
 
@@ -121,11 +111,13 @@ public class HomeController {
 
 						model.addObject("ResponseString", str);
 						model.addObject("payloadMac", mac_payload);
-					}else if(auth == Authenticator.NOT_AUTHENTICATED) {
-						model.addObject("ResponseString", "Exception: mac is not identical.");
+						
+						logger.info("Complete query...(AAQI)");
+					} else if(auth == Authenticator.NOT_AUTHENTICATED) {
+						model.addObject("ResponseString", "Exception: Not Authenticated");
 						model.addObject("payloadMac", "0");
 
-						logger.info("Complete query...(Not Authenticated)");
+						logger.info("Complete query...(AAQI: Not Authenticated)");
 
 						return model;
 					}
