@@ -8,7 +8,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.gs1.source.service.ProductData;
+import org.gs1.source.service.ResponseMarshaller;
 import org.gs1.source.tsd.ObjectFactory;
 import org.gs1.source.tsd.TSDQueryByGTINResponseType;
 
@@ -16,9 +16,27 @@ public class POJOConvertor {
 
 	public String marshal(TSDQueryByGTINResponseType rs) throws UnsupportedEncodingException, JAXBException {
 
-		ProductData productdata = new ProductData();
-		productdata.make(rs.getProductData());
-		String str = productdata.marshal();
+		ResponseMarshaller responseMarshaller = new ResponseMarshaller();
+		
+		if(rs.getProductData() != null) {
+			responseMarshaller.make(rs.getProductData());
+		} else if(rs.getNoDataException() != null) {
+			responseMarshaller.make(rs.getNoDataException());
+		} else if(rs.getInvalidGTINException() != null) {
+			responseMarshaller.make(rs.getInvalidGTINException());
+		} else if(rs.getInvalidTargetMarketException() != null) {
+			responseMarshaller.make(rs.getInvalidTargetMarketException());
+		} else if(rs.getUnsupportedVersionException() != null) {
+			responseMarshaller.make(rs.getUnsupportedVersionException());
+		} else if(rs.getInvalidRequestException() != null) {
+			responseMarshaller.make(rs.getInvalidRequestException());
+		} else if(rs.getSecurityException() != null) {
+			responseMarshaller.make(rs.getSecurityException());
+		} else if(rs.getImplementationException() != null) {
+			responseMarshaller.make(rs.getImplementationException());
+		}
+		
+		String str = responseMarshaller.marshal();
 
 		return str;
 

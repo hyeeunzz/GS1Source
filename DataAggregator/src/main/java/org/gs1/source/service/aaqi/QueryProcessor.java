@@ -37,6 +37,8 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 	private static final Logger logger = LoggerFactory.getLogger(QueryProcessor.class);
 
 	private static final String PROPERTY_PATH = "aggregator.properties";
+	
+	private TSDQueryByGTINResponseType rs;
 
 	private DAOFactory factory;
 	private String DBtype;
@@ -48,6 +50,7 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 
 	public QueryProcessor(DAOFactory factory, String DBtype, TSDQueryByGTINRequestType request) {
 
+		this.rs = new TSDQueryByGTINResponseType();
 		this.factory = factory;
 		this.DBtype = DBtype;
 		this.request = request;
@@ -57,10 +60,37 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 	}
 
 	public TSDQueryByGTINResponseType query() throws Exception {
+		
+		String targetMarketValue = request.getTargetMarket().getValue();
+		
+		CheckBit checkBit = new CheckBit();
+		if(gtin.length() < 13 || checkBit.check(gtin) == false) {
+			Description200Type reason = new Description200Type();
+			reason.setLanguageCode("en");
+			reason.setCodeListVersion("1.1");
+			reason.setValue("Invalid GTIN");
+			
+			TSDInvalidGTINExceptionType exception = new TSDInvalidGTINExceptionType();
+			exception.setExceptionReason(reason);
+			rs.setInvalidGTINException(exception);
+			return rs;
+		}
+		
+		if(targetMarketValue.length() != 3) {
+			Description200Type reason = new Description200Type();
+			reason.setLanguageCode("en");
+			reason.setCodeListVersion("1.1");
+			reason.setValue("Invalid TargetMarket");
+			
+			TSDInvalidTargetMarketExceptionType exception = new TSDInvalidTargetMarketExceptionType();
+			exception.setExceptionReason(reason);
+			rs.setInvalidTargetMarketException(exception);
+			return rs;
+		}
 
 		DataAccessObject dao = factory.getDAO(DBtype);
 
-		TSDQueryByGTINResponseType rs = dao.queryCache(gtin, targetMarket.getValue());
+		rs = dao.queryCache(gtin, targetMarketValue);
 
 		if(rs != null) {
 			logger.info("Get Data from Cache");
@@ -72,8 +102,8 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 			} else {
 				//Call AIQI
 				TSDQueryIndexByGTINRequestType aiqiRequest = new TSDQueryIndexByGTINRequestType();
-				aiqiRequest.setGtin(request.getGtin());
-				aiqiRequest.setTargetMarket(request.getTargetMarket());
+				aiqiRequest.setGtin(gtin);
+				aiqiRequest.setTargetMarket(targetMarket);
 
 				AIQIProcessor aiqiProcessor = new AIQIProcessor();
 				TSDQueryIndexByGTINResponseType aiqiResponse = aiqiProcessor.queryByGtin(aiqiRequest);
@@ -102,8 +132,6 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 	 */
 	public TSDQueryByGTINResponseType queryByGtin(TSDQueryByGTINRequestType request) throws Exception{
 		
-		TSDQueryByGTINResponseType rs = new TSDQueryByGTINResponseType();
-		
 		String gtin = request.getGtin();
 		String targetMarketValue = request.getTargetMarket().getValue();
 		String dataVersion = request.getDataVersion();
@@ -117,31 +145,6 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 			TSDInvalidRequestExceptionType exception = new TSDInvalidRequestExceptionType();
 			exception.setExceptionReason(reason);
 			rs.setInvalidRequestException(exception);
-			return rs;
-		}
-		
-		CheckBit checkBit = new CheckBit();
-		if(gtin.length() < 13 || checkBit.check(gtin) == false) {
-			Description200Type reason = new Description200Type();
-			reason.setLanguageCode("en");
-			reason.setCodeListVersion("1.1");
-			reason.setValue("Invalid GTIN");
-			
-			TSDInvalidGTINExceptionType exception = new TSDInvalidGTINExceptionType();
-			exception.setExceptionReason(reason);
-			rs.setInvalidGTINException(exception);
-			return rs;
-		}
-		
-		if(targetMarketValue.length() != 3) {
-			Description200Type reason = new Description200Type();
-			reason.setLanguageCode("en");
-			reason.setCodeListVersion("1.1");
-			reason.setValue("Invalid TargetMarket");
-			
-			TSDInvalidTargetMarketExceptionType exception = new TSDInvalidTargetMarketExceptionType();
-			exception.setExceptionReason(reason);
-			rs.setInvalidTargetMarketException(exception);
 			return rs;
 		}
 		
