@@ -15,8 +15,6 @@ import org.gs1.source.service.aaqi.QueryReceiver;
 import org.gs1.source.service.mongo.MongoServerKey;
 import org.gs1.source.service.registration.Registerar;
 import org.gs1.source.service.util.MacEncode;
-import org.gs1.source.service.util.POJOConvertor;
-import org.gs1.source.tsd.TSDQueryByGTINResponseType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -89,13 +87,8 @@ public class HomeController {
 				QueryReceiver queryReceiver = new QueryReceiver(gtin, targetMarketValue, dataVersion, clientGln, mac);
 				QueryProcessor queryProcessor = queryReceiver.getProcessor();
 
-				TSDQueryByGTINResponseType rs = queryProcessor.query();
+				String str = queryProcessor.query();
 				
-				//Marshal data to string
-				POJOConvertor convertor = new POJOConvertor();
-				String str = convertor.marshal(rs);
-				logger.info("Marshalling");
-
 				//case 1) AAQI interface
 				if(queryProcessor.isAAQI()){
 
@@ -118,17 +111,15 @@ public class HomeController {
 						model.addObject("payloadMac", "0");
 
 						logger.info("Complete query...(AAQI: Not Authenticated)");
-
-						return model;
 					}
 				}
 				//case 2) Not AAQI interface, just present product data in web
 				else{
 					model.addObject("ResponseString", str);
 					model.addObject("payloadMac", "0");
+					
+					logger.info("Complete query...");
 				}
-
-				logger.info("Complete query...");
 
 				return model;
 
