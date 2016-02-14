@@ -54,8 +54,6 @@ public class Registerar {
 			return EXISTED;
 		}
 
-		dao.insertDB(rs);
-
 		//ZONE Update
 		rs_check = dao.queryDB(gtin);
 		
@@ -72,6 +70,8 @@ public class Registerar {
 			ZONEUpdator zoneUpdator = new ZONEUpdator();
 			zoneUpdator.add(request);
 		}
+		
+		dao.insertDB(rs);
 
 		return INSERTED;
 	}

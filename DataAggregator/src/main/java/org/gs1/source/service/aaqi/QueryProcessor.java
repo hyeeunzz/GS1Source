@@ -57,13 +57,13 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 	}
 
 	public String query() throws Exception {
-		
+
 		TSDQueryByGTINResponseType rs = new TSDQueryByGTINResponseType();
 
 		String targetMarketValue = request.getTargetMarket().getValue();
 
 		CheckBit checkBit = new CheckBit();
-		
+
 		if(gtin.length() < 14 || checkBit.check(gtin) == false) {
 			Description200Type reason = new Description200Type();
 			reason.setLanguageCode("en");
@@ -74,7 +74,7 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 			exception.setExceptionReason(reason);
 			rs.setInvalidGTINException(exception);
 			logger.info("Invalid GTIN");
-			
+
 		} else if(targetMarketValue.length() != 3) {
 			Description200Type reason = new Description200Type();
 			reason.setLanguageCode("en");
@@ -107,14 +107,49 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 
 					AIQIProcessor aiqiProcessor = new AIQIProcessor();
 					TSDQueryIndexByGTINResponseType aiqiResponse = aiqiProcessor.queryByGtin(aiqiRequest);
-					aggregatorUrl = aiqiResponse.getIndexEntry().getDataAggregatorService().getBaseUrl();
+					if(aiqiResponse == null) {
+						logger.info("No Data in GS1 Source");
 
-					rs = queryByGtin(request);
-					if(rs.getProductData() != null) {
-						logger.info("Get Data from AAQI");
-						dao.insertCache(rs);
+						Description200Type reason = new Description200Type();
+						reason.setLanguageCode("en");
+						reason.setCodeListVersion("1.1");
+						reason.setValue("No Data in GS1 Source");
+
+						TSDNoDataExceptionType exception = new TSDNoDataExceptionType();
+						exception.setExceptionReason(reason);
+
+						rs = new TSDQueryByGTINResponseType();
+						rs.setNoDataException(exception);
+
 					} else {
-						logger.info("Data Query Failed by Exception");
+						aggregatorUrl = aiqiResponse.getIndexEntry().getDataAggregatorService().getBaseUrl();
+						Properties prop = new Properties();
+						prop.load(Test.class.getClassLoader().getResourceAsStream(PROPERTY_PATH));
+						String thisUrl = prop.getProperty("aggregatorUrl");
+						System.out.println(aggregatorUrl+"\n"+thisUrl);
+						if(aggregatorUrl.compareTo(thisUrl) == 0) {
+							logger.info("This data is not supported with this target market.");
+
+							Description200Type reason = new Description200Type();
+							reason.setLanguageCode("en");
+							reason.setCodeListVersion("1.1");
+							reason.setValue("This data is not supported with this target market.");
+
+							TSDNoDataExceptionType exception = new TSDNoDataExceptionType();
+							exception.setExceptionReason(reason);
+
+							rs = new TSDQueryByGTINResponseType();
+							rs.setNoDataException(exception);
+
+						} else {
+							rs = queryByGtin(request);
+							if(rs.getProductData() != null) {
+								logger.info("Get Data from AAQI");
+								dao.insertCache(rs);
+							} else {
+								logger.info("Data Query Failed by Exception");
+							}
+						}
 					}
 				}
 			}
@@ -124,7 +159,7 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 		POJOConvertor convertor = new POJOConvertor();
 		String str = convertor.marshal(rs);
 		logger.info("Marshalling");
-		
+
 		return str;
 
 	}
@@ -137,7 +172,7 @@ public class QueryProcessor implements AggregatorAggregatorQueryInterface {
 	 * @throws Exception
 	 */
 	public TSDQueryByGTINResponseType queryByGtin(TSDQueryByGTINRequestType request) throws Exception{
-		
+
 		TSDQueryByGTINResponseType rs = new TSDQueryByGTINResponseType();
 
 		String gtin = request.getGtin();
